@@ -559,6 +559,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   记录」。发现 `%LOCALAPPDATA%\Programs` 是 `D:\Programs` 的链接，只有一份 magpie。
 - 2026-11-25：Cursor 起初不通：先把 Cursor 从 3.14.27 升到 3.31.15，真正的原因是
   fork 断开时恢复的 `cursor.general.disableHttp1SSE: true`，删掉后通了。
+- 2026-11-25：收尾：删旧 CA；57658 改走 hub；CodeZ 换成插件（三把密钥一个供应商）；
+  关掉 Cursor 自动更新。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -640,18 +642,38 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
   junction 会让 fork 出现 `-2` 行，要删掉 `~/.claude-rec-*`），以及
   `magpie cursor-bridge default` 断开桥接。
 
+切换后的收尾（2026-11-25 11:50–12:05，用户逐项选定）：
+
+15. **旧证书**：删了本机根证书里的 `4697CEDF…`（8 月）、`293CA69A…`（9 月），
+    当前用户根证书里 fork 的 `482117B9…`（Magpie Cursor Local CA）。只留桥接在用的
+    `0F20A7D3…`（和 `data/ca/ca.crt` 的指纹对过）。用户点了 UAC。
+16. **57658**：删掉手加的 `magpie` 条目（裸 `/hub`），`magpie library sync` 后只剩
+    `/hub/claude%23rec-57658`，和其他账号一样。原文件备份在切换备份文件夹的
+    `57658-claude.json`。
+17. **CodeZ 换成插件**：装 `codez-v0.1.0`，三把密钥各 `magpie plugin login codez`
+    一次（34 个模型），`magpie provider rm` 掉 `codez`、`codez-2`、`cz-gemini`
+    （迁移前备份在切换备份文件夹的 `before-codez/`），插件的供应商随即从
+    `codez-plugin` 变成 `codez`。挑回原来的 13 个模型（`magpie provider models
+    codez …`），原来 `*: 1000000` 的 7 个模型用 `magpie provider set codez
+    context.<模型>=1m` 设回。Codex 的 `codez/gpt-6.2-astra` 名字没变；4 个
+    `auto/gemini-…` 自动组接上了 `codez/gemini-…`。每把密钥各一个短请求：
+    deepseek（国模）、gemini 通；GPT 从 Chat 入口第一次 502 "CodeZ has no
+    endpoint configured"（31 秒），十几秒后再试 2 秒通（chat→responses），从
+    Responses 入口一直通。应是改名后网关的插件模型信息还没刷新的那一会儿。
+    删 `cz-gemini` 时 magpie 把 Cursor 桥接的模型（当时是 `auto/gemini-4-argon`）
+    改回了默认，已重新设回。`rex2` 在迁移前已经不在 `providers.json` 里（用户自己
+    删的）。
+18. **Cursor 自动更新**：`settings.json` 加 `update.mode: none`。先
+    `magpie cursor-bridge default` 断开、改设置、再
+    `magpie cursor-bridge auto/gemini-4-argon` 连接，状态 connected。
+19. 删掉了 fork 仓库里登记的临时 upstream worktree（`git worktree remove`）。
+
 还没做：
 
-- 用户在 Cursor 里日常用几天（第 5 步的试用；第一条对话 2026-11-25 11:29 已通）。
-- Cursor 会自己更新，可能超出桥接测过的 3.31.17。要不要关掉 Cursor 的自动更新
-  由用户定。
-- 系统里还有旧的受信任 CA：本机根证书里两张早先的"Cursor BYOK Local CA"
-  （2036-08-23、2036-09-22 到期，以前试 Cursor BYOK 留下的）；当前用户根证书里
-  fork 的"Magpie Cursor Local CA"和同样几张旧的。要不要删由用户定。
-- 57658 那条手加的 `magpie` 条目要不要删（删了它也走 hub）。
-- CodeZ 插件：装上、三把密钥各登录一次、删掉三个旧的 CodeZ 供应商。会改变
-  `codez-2/…`、`cz-gemini/…` 这些模型名，agent 里选过它们的要重选，所以等用户
-  决定。
+- 用户在 Cursor 里日常用几天（第 5 步的试用）。
 - handoff skill：用户在 Library 里装 `session-handoff`，并加 Magpie Sessions MCP。
 - fork 留下的文件（`~/.config/magpie/cursor-backend/`、`library-follow.json`）
-  官方版不读，留着无害，确认不回滚后可以删。
+  官方版不读，留着无害，确认不回滚后可以删；`D:\Programs\cursor`（=
+  `%LOCALAPPDATA%\Programs\cursor`）是 Cursor 的残留文件夹，同理。
+- 想升级 Cursor 时：先看桥接的实测范围（README 第一段），再手动装那个版本。
+
