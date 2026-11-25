@@ -1,0 +1,21 @@
+{
+  "name": "magpie-plugin-codez",
+  "version": "0.1.0",
+  "description": "CodeZ (codezsy.com) as a magpie provider with your API key: each key's models, GPT on Responses, Claude on Messages, the rest on chat completions",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "codez.js",
+    "README.md"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zwenooo/magpie-plugins.git",
+    "directory": "packages/codez"
+  },
+  "magpie": {
+    "icon": "https://codezsy.com/logo.png"
+  }
+}
