@@ -620,6 +620,12 @@ Cursor 起初不能用（用户："好像cursor不太行哦"），两个原因�
     以后不要在 Cursor 里再打开这一项。改 Cursor 的 `settings.json` 会让桥接暂停，
     改完要断开重连。
 
+14. **`rex2/claude-opus-5-5` 不通**（用户："claude-opus-5-5似乎还是不行"）：和桥接
+    无关。`rex2` 供应商指向 `127.0.0.1:8788`（一个包装本机 Claude 命令行的适配器，
+    报错里自称 "CLI adapter"），那里没有程序监听，magpie 报 502 "connection
+    refused"。rex2 上次被用是 11-09，日志看不出它什么时候停的。用户换了别的模型，
+    11:51 的对话正常完成。要用 rex2，得先把那个适配器启动起来。
+
 桥接找 Cursor 用的是 `%LOCALAPPDATA%\Programs\cursor`（= `D:\Programs\cursor`），
 那是一个残留文件夹（没有 Cursor.exe，有个空的 `patches`）。所以控制台读不到
 Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
