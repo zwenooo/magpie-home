@@ -19,23 +19,26 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 - 第三方供应商、第三方工具的代码（ReClaude、CodeZ 等）只出现在插件里。
 - 讨论完就开始动手；迁出一项一项来，每一步都要能用。
 
-## 插件仓库 zwenooo/magpie-plugins
+## 插件和仓库
 
-- 本地在 `D:\code\magpie-plugins`，2026-11-24 建立（`62035ea`）。
-- 每个插件是 `packages/<名字>/` 下的一个独立包。
-- 安装：magpie 通过 bun 安装 `github:owner/repo#<ref>`，只能装仓库根目录的
-  包，不支持子目录。所以每个插件按版本单独打 tag `<名字>-v<版本>`，tag 指向
-  一个只含该插件、且插件在根目录的提交，用 `scripts/release.mjs` 生成
-  （`git commit-tree`，父提交是该插件的上一个版本）。插件页填
-  `github:zwenooo/magpie-plugins#<名字>-v<版本>`。开发时也可以直接装本地
-  文件夹。
-- 2026-11-24 实测：magpie 自带的 bun（1.4.5）能把这样的 tag 当根目录的包装上
-  （用本地 `git+file:` 试的；本机另装的 bun 1.2.21 装 `git+file:` 会崩）。
-  upstream 的 `IsGit` 接受 `github:…#<tag>`，更新检查也按 tag 指向的提交比较
-  （`internal/plugin/gitrev.go`）。从 GitHub 装还没试，要先推送 tag。
-- 2026-11-25 已推送 `reclaude-v0.1.0`、`reclaude-v0.1.1`，在正在用的 magpie
-  上用 `magpie plugin add github:zwenooo/magpie-plugins#reclaude-v0.1.1` 从
-  GitHub 装上过（能装）。后来因为和 fork 冲突撤下了，见「ReClaude 与配置跟随」。
+2026-11-25 起每个插件一个仓库（用户问"为啥不能分两个仓库？"，选了每个插件一个仓库）：
+
+- [zwenooo/magpie-reclaude](https://github.com/zwenooo/magpie-reclaude)，本地
+  `D:\code\magpie-reclaude`，安装 `github:zwenooo/magpie-reclaude`；
+- [zwenooo/magpie-codez](https://github.com/zwenooo/magpie-codez)，本地
+  `D:\code\magpie-codez`，安装 `github:zwenooo/magpie-codez`；
+- 本仓库 `zwenooo/magpie-plugins`（本地 `D:\code\magpie-plugins`）留着 skill
+  （`skills/`）、这份 roadmap 和总的说明。
+
+包在各自仓库的根目录，所以 magpie（bun 装 `github:owner/repo#ref`，只能装根目录的
+包）可以直接装，不用再拼提交。不带 `#…` 安装时跟着 `main`，magpie 按提交号提示
+更新（upstream `internal/plugin/gitrev.go`）。发布：改 `package.json` 的 version、
+提交、`git tag v<版本>`、推送。
+
+拆分前（2026-11-24 到 11-25）这两个插件在本仓库的 `packages/` 下，用
+`scripts/release.mjs` 打 `<名字>-v<版本>` 这样的 tag（tag 指向一个只含该插件、
+插件在根目录的提交）。拆分用 `git subtree split -P packages/<名字>`，历史一并带过去。
+旧 tag 保留，脚本和 `packages/` 已删。
 
 ## fork 功能的去向
 
@@ -45,11 +48,11 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 | --- | --- | --- |
 | Cursor BYOK（普通 Cursor 用 magpie 的模型） | 改用社区的 Cursor 桥接插件，见下文 | 待试用 |
 | 自己的发布和应用内更新 | 回归官方版后用官方的更新 | fork 退役时去掉 |
-| CodeZ 预设 | 插件 `codez` 0.1.0，见下文 | 写好了，沙箱里用真实密钥实测通过 |
+| CodeZ 预设 | 插件 [magpie-codez](https://github.com/zwenooo/magpie-codez)，见下文 | 已装，三把密钥在一个供应商下 |
 | 默认关闭合作推广 | 不用插件：upstream 有开关，见下文 | 已查明 |
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
 | Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | handoff 用 skill `session-handoff`；续接缺口提了 upstream issue #7694；Desktop 转换不做，见「Sessions」 | 已完成 |
-| Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 `reclaude`：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 写好了；不能装在 fork 上，换官方版时再装 |
+| Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 [magpie-reclaude](https://github.com/zwenooo/magpie-reclaude)：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 已装（官方版上） |
 | 8 个 upstream 代码修复（FORK.md「Fixes inside upstream code」） | 不改原版代码，回归时一起放弃，见下文 | 已决定 |
 
 ## Cursor BYOK 与 Cursor 桥接插件
@@ -561,6 +564,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   fork 断开时恢复的 `cursor.general.disableHttp1SSE: true`，删掉后通了。
 - 2026-11-25：收尾：删旧 CA；57658 改走 hub；CodeZ 换成插件（三把密钥一个供应商）；
   关掉 Cursor 自动更新。
+- 2026-11-25：handoff skill 和 Magpie Sessions 装进 Library；两个插件拆成独立仓库
+  `zwenooo/magpie-reclaude`、`zwenooo/magpie-codez`，已装的换成新地址。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -667,6 +672,11 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     `magpie cursor-bridge default` 断开、改设置、再
     `magpie cursor-bridge auto/gemini-4-argon` 连接，状态 connected。
 19. 删掉了 fork 仓库里登记的临时 upstream worktree（`git worktree remove`）。
+21. **插件拆成独立仓库**（用户："行吧，按照你的建议来"）：见「插件和仓库」。
+    reclaude 0.1.3、codez 0.1.1（只改了仓库地址、LICENSE 和说明）。已装的两个插件
+    `magpie plugin rm` 旧地址、`add` 新地址：codez 的三把密钥、34 个模型、13 个
+    挑选和上下文都还在，请求正常；13 个 junction 和跟随都还在。换之前的配置备份在
+    切换备份文件夹的 `before-repo-split/`。
 20. **handoff**（用户："你来做"）：官方版的命令行装不了 skill，只能在 Library 页面装。
     所以在 v0.1.4777 的源码里，往 `internal/library` 加了一个一次性的文件，调用
     页面背后的同一套函数：`InstallServer("magpie-sessions", …)` 和
@@ -685,4 +695,3 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
   官方版不读，留着无害，确认不回滚后可以删；`D:\Programs\cursor`（=
   `%LOCALAPPDATA%\Programs\cursor`）是 Cursor 的残留文件夹，同理。
 - 想升级 Cursor 时：先看桥接的实测范围（README 第一段），再手动装那个版本。
-
