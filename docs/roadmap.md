@@ -157,6 +157,15 @@ fork 里 CodeZ 的行为，插件要做到：
   以后，插件的供应商就叫 `codez`，`codez/<模型>` 这些名字还能对上。
 - 还没装到正在用的 magpie。fork 上装会多出一套 `codez-plugin/…` 模型，没有必要；
   换官方版时再装。
+- 0.2.0（2026-11-25）：登录时选地址，每个账号各记各的（存在账号的 metadata
+  里，loader、模型列表、密钥检查都用它）。预置 `api.codezsy.com`（默认）、
+  `api-s.codezsy.com`（多节点中转）、`api.zwenooo.link`、`api-s.zwenooo.link`，
+  也可以自填。同一把密钥在这四个地址上都列出同样 23 个模型，是同一个 CodeZ。
+  选项来自插件登录方式的 `prompts`（select，加一个 `when` 条件的 text），
+  没写 `authorize` 时 magpie 自己问密钥，并把全部答案存进账号的 metadata
+  （upstream `host.js` 的 `apiKey`）；loader 给的 baseURL 优先于模型行里的地址
+  （`plugins.go` 的 `pluginRequestBase`）。命令行和窗口都会问。沙箱里试过预置和
+  自填两种。0.2.0 之前登录的账号没有记地址，照旧走 `api.codezsy.com`。
 
 ## 合作推广
 
