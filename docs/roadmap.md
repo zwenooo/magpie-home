@@ -48,7 +48,7 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 | CodeZ 预设 | 插件 `codez` 0.1.0，见下文 | 写好了，沙箱里用真实密钥实测通过 |
 | 默认关闭合作推广 | 不用插件：upstream 有开关，见下文 | 已查明 |
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
-| Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | 做成插件；能用哪个插件扩展点还没查 | 待分析 |
+| Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | 大部分 upstream 已有或不用插件，见「Sessions」 | 已分析，待用户定 |
 | Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 `reclaude`：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 写好了；不能装在 fork 上，换官方版时再装 |
 | 8 个 upstream 代码修复（FORK.md「Fixes inside upstream code」） | 不改原版代码，回归时一起放弃，见下文 | 已决定 |
 
@@ -172,10 +172,59 @@ agent 继续（handoff）。决定（2026-11-24）：都做成插件，不改原
   `e6f4af3f9` 上，`appdir.ClaudeHomesIn` 会列出带 `projects/` 的
   `~/.claude-rec-<id>` junction（Windows 上 `DirStat` 就是 `os.Stat`，会跟随
   junction）。不在家目录下的其他文件夹（比如从别的电脑拷来的）再看。
-- **Claude Desktop 续接、handoff**：还没查能用哪个插件扩展点。插件页面
-  （`magpie.page`）跑在沙箱 iframe 里，能读的东西有限（`plugin.PageReads`）。
-  可能需要像 Cursor 桥接插件那样带一个自己的后台程序或命令行工具。下一步：
-  分析。
+- **Claude Desktop 续接、handoff**：2026-11-25 分析完，见下面「Sessions 的
+  分析（第 4 步）」。
+
+### Sessions 的分析（第 4 步，2026-11-25）
+
+fork 在 Sessions 上做的（FORK.md）和 upstream `e6f4af3f9` 已有的：
+
+| fork 的功能 | fork 代码 | upstream 已有 | 还缺 |
+| --- | --- | --- | --- |
+| 导入别的文件夹的 Claude 历史（只读） | `sources.go` 513 行 + 页面 | 读家目录下每个 `.claude*` 文件夹，及其下一层（`appdir.ClaudeHomesIn`） | 不缺，见下 |
+| 导入的会话、别的配置文件夹的会话原地续接 | `resumeOf` 等钩子 | `claude --resume <id>`，不带 `CLAUDE_CONFIG_DIR`（`sessions.go` 的 `resumeCommand`） | 别的配置文件夹里的会话续接时找不到 |
+| Claude Desktop 的会话转进 Claude Code / Codex | `carry_convert.go` +72 行 | 只有 Claude Code ↔ Codex 互转（`convertsTo`） | Desktop → Claude Code / Codex |
+| handoff：任意对话交给任意 agent（压缩记录 + 提示词） | `handoff.go` 862 行 + 菜单 + 命令行 | `magpie-sessions` MCP（`/mcp/magpie/sessions`，`search_sessions`、`read_session`），`magpie sessions show/search` | 固定的提示词和压缩规则 |
+
+upstream 给插件的扩展点（`internal/plugin/page.go`）：
+
+- 插件页面可以整个替换内置的 Sessions 页（`Replaceable`），但会话行上没有插件能加
+  的菜单（`ActionMenus` 只有 provider、agent），面板也放不进 Sessions 页
+  （`PanelSlots`：agents、usage、settings、provider）。
+- 页面能被授权读的只有用量和供应商列表（`PageReads`），读不到会话。
+- 插件的宿主部分（`main`）能读文件、跑命令，可以给自己的页面提供一个本地服务
+  （`magpie.page.service`）。
+- 插件工具：作为 MCP 工具给所有 agent。
+
+逐项结论：
+
+1. **导入别的文件夹**：不用插件。
+   - ReClaude 账号：`reclaude` 插件的 junction。
+   - 别的电脑拷来的：放到 `~/.claude-imports/<名字>/`（里面是 `projects/`）。
+     2026-11-25 在 upstream 上实测：`ClaudeHomesIn` 读到
+     `.claude-imports\pc2`、`pc3`；`claudeDirAgents` 不把 `.claude-imports` 当成
+     Library 的行（它顶层没有 settings.json、`.credentials.json`、projects）。
+   - 和 fork 的差别：fork 保证从不写导入的来源（不能删除、移动）。upstream 把它们
+     当普通会话，Sessions 页上的删除、移动会动到拷贝本身。
+2. **别的配置文件夹里的会话原地续接**：upstream 的续接命令没有
+   `CLAUDE_CONFIG_DIR`，`~/.claude-work` 这类文件夹（也包括 rec 账号的
+   junction）里的会话，从 Sessions 页续接会找不到。这是 upstream 的缺口，对所有
+   用多个 Claude 配置文件夹的人都一样，适合给 upstream 提 issue，不适合做插件
+   （插件改不了续接命令）。在那之前：rec 账号的会话用 ReClaude 打开对应账号再
+   `/resume`，或者把会话文件复制到当前账号（见「实现时的备忘」）。
+3. **Claude Desktop → Claude Code / Codex**：upstream 没有。可选：
+   - 给 upstream 提 issue（或 PR：fork 的改动只有 +72 行，`convertsTo` 加
+     `claude-desktop`）；
+   - 插件：自己的页面 + 宿主里的服务，列出 Desktop 的会话、一键转换（把 fork 的
+     转换移植成 JS）。工作量中等，还要跟着 Desktop 的文件格式变；
+   - 不做精确转换，用第 4 条的 handoff 接着做。
+4. **handoff**：upstream 的 `magpie-sessions` MCP 已经能让任意 agent 搜到并分段读
+   任意会话。fork 多出来的是：固定的提示词（把引用当材料而不是指令、已做的不
+   重做、以现在的文件为准、先说明进度再继续）和按规则压缩的记录。最省事的做法
+   是在 Library 里加一个 skill，把这些规则写进去，让 agent 用 `read_session` 读；
+   不用写插件代码，每个 agent 都能用。前提是在 Library → MCP 里把
+   `magpie-sessions` 给需要的 agent（`magpie mcp sessions`）。如果以后觉得分段读
+   太慢，再考虑做一个插件工具，返回 fork 那样的压缩记录（移植 `handoff.go`）。
 
 ## upstream 代码修复
 
@@ -380,7 +429,10 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
      保留着（其他账号是 `/hub/claude%23rec-<id>`）。能用，要不要换由用户定。
 3. **CodeZ 供应商插件**：完成（0.1.0），见「CodeZ」。换官方版时装上，三把密钥
    各登录一次，再删掉 fork 留下的三个 CodeZ 供应商。
-4. **分析 Claude Desktop 续接和 handoff** 能用哪个插件扩展点。
+4. **分析 Claude Desktop 续接和 handoff**：完成，见「Sessions 的分析」。
+   建议：导入不用插件；续接缺 `CLAUDE_CONFIG_DIR` 给 upstream 提 issue；
+   handoff 用 Library skill + upstream 的 `magpie-sessions` MCP；Desktop 转换
+   先不做，用 handoff 代替。待用户定。
 5. **用户试用 Cursor 桥接插件**，见「Cursor BYOK 与 Cursor 桥接插件」。
 6. **都能用之后，换成官方 magpie**：
    - 先换 magpie，再装 reclaude（它在 fork 上什么都不做；换完以后 fork 的
@@ -390,7 +442,7 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
 
 用户说过"讨论完就开始动手"。2026-11-24 用户说"按照这个，开始吧"，第 1、2 步
 已做完；reclaude 在 fork 上装过一次出了冲突，已撤下并清理，要等换官方版时再装。
-第 3 步 CodeZ 插件也已完成（2026-11-25）。下一步是第 4 步。
+第 3 步 CodeZ 插件也已完成（2026-11-25）。第 4 步分析完，等用户对建议拍板。
 
 ## 实现时的备忘
 
@@ -484,3 +536,7 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
   在 fork 上不运行。reclaude 等换官方版时再装。
 - 2026-11-25：CodeZ 插件 0.1.0 完成，按模型选 Responses / Messages / Chat，
   多把密钥挂在同一个供应商下。沙箱里用真实密钥实测通过。
+- 2026-11-25：第 4 步分析完。upstream 已有 Claude Desktop 会话的读取、
+  Claude Code ↔ Codex 互转、`magpie-sessions` MCP；缺的是别的配置文件夹的续接
+  （`CLAUDE_CONFIG_DIR`）和 Desktop → Claude Code / Codex 的转换。别的电脑的拷贝
+  放 `~/.claude-imports/<名字>/` 即可（实测）。
