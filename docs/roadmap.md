@@ -573,6 +573,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
 - 2026-11-25：`zwenooo/magpie-plugins` 改名 `zwenooo/magpie-home`。
 - 2026-11-25：fork 退役：GitHub 上 `zwenooo/magpie` 归档，本地仓库和 28 个 worktree
   打成 bundle 备份后删掉（切换记录第 25 步）。
+- 2026-11-25：用户确定不回滚 fork，回滚用的 exe、配置备份和 fork 残留都清掉
+  （切换记录第 26 步）。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -644,7 +646,8 @@ Cursor 起初不能用（用户："好像cursor不太行哦"），两个原因�
 那是一个残留文件夹（没有 Cursor.exe，有个空的 `patches`）。所以控制台读不到
 Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
 
-回滚：
+回滚（2026-11-25 已不可用：用户确定不回滚，回滚用的 exe 和配置备份已删，见第 26 步；
+下面留作记录）：
 
 - 退出官方 magpie，把 `D:\Programs\magpie\magpie-rollback-fork-4728-vb3\magpie.exe`
   放回 `D:\Programs\magpie\magpie.exe`；配置要回到切换前，用
@@ -748,11 +751,18 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     没改；magpie 和 Codex 的配置里没有。要找回某个分支：
     `git clone D:\Backups\magpie-fork-final-20261125\magpie-fork-all.bundle magpie-fork`，
     再 `git checkout <分支>`（bundle 里的分支在 `origin/` 下）。
+26. **清掉回滚用的东西和 fork 残留**（用户确定不回滚："清理了吧"）：删了
+    `D:\Programs\magpie` 里 13 个 `magpie-rollback-*`（fork 的 0.1.4562、4728 自更新
+    留下的副本，加上第 6 步的 `magpie-rollback-fork-4728-vb3`）；切换备份文件夹里的
+    `config-magpie`、`before-codez`、`cursor-settings*.json`、`57658-claude.json`；
+    `~/.config/magpie/cursor-backend/`、`library-follow.json`；Cursor 的残留文件夹
+    `D:\Programs\cursor`。D 盘多出 3.58 GB，C 盘 0.47 GB。切换备份文件夹里和回滚无关的
+    `rec-sessions-before-share`（第 23 步）、`before-repo-split`、`library-before-*.json`
+    留着。另外从 `.claude.json`（主配置和 48142、54086、54687、55795、57545、57658）
+    删掉了 `projects["D:/code/magpie"]` 和 `githubRepoPaths["zwenooo/magpie"]` 里的
+    这个路径。
 
 还没做：
 
 - 用户在 Cursor 里日常用几天（第 5 步的试用）。
-- fork 留下的文件（`~/.config/magpie/cursor-backend/`、`library-follow.json`）
-  官方版不读，留着无害，确认不回滚后可以删；`D:\Programs\cursor`（=
-  `%LOCALAPPDATA%\Programs\cursor`）是 Cursor 的残留文件夹，同理。
 - 想升级 Cursor 时：先看桥接的实测范围（README 第一段），再手动装那个版本。
