@@ -588,6 +588,9 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   ReClaude 不上架，见「插件和仓库」。
 - 2026-11-25：reclaude 改名 ReCode（0.3.0，`zwenooo/magpie-recode`，带 recode.cat 的 logo），
   已装的换成新地址（切换记录第 27 步）。
+- 2026-11-25：关闭 upstream issue #7694（续接别的配置文件夹里的会话），原因是不再需要：
+  ReCode 的共享会话让所有账号在同一个文件夹里 `/resume`。关闭时 Gaoshou101、joei4cm 各贴了
+  修复分支（未提 PR），评论里说明了可以拿去用、需要时重开。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
