@@ -695,6 +695,10 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     `<名字>.from-<账号>.md` 并加索引行，启动时把放进 `conflicts/` 的 28 个补回，
     `conflicts/` 清空。验证：48142 原本没有 magpie 项目的会话，现在能看到 57545 的
     `75bf822f`。56156、57658 的 `projects` 当时有会话在写，空闲后会自动合并。
+    0.2.2：空的 `projects/`（ReClaude 新建账号时可能先建一个空文件夹）不再等 10 分钟，
+    马上接上。沙箱（官方 magpie，`shareSessions` 开）里新建账号 555：2 秒内 Library 行、
+    `/hub/claude%23rec-555`、`projects`、`file-history` 都好了，并能看到 333 原有的会话。
+    新账号全自动，前提是 magpie 开着；magpie 没开时开过会话的账号，之后空闲 10 分钟再合并。
 22. **两个插件换地址后又被移除了**（用户："怎么插件我看到已安装里，没有codez"）：
     reclaude 在 12:20–12:22 之间、codez 在 12:22:33 从 `plugins.json` 里没了，
     包也被删了。magpie 只有用户移除时才删插件（`provider.RemovePlugin` →
