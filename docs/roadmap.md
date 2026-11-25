@@ -571,6 +571,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
 - 2026-11-25：reclaude 0.2 共享会话：所有 rec 账号共用 `~/.rec-sessions`，记忆也随之
   共用并按行合并。
 - 2026-11-25：`zwenooo/magpie-plugins` 改名 `zwenooo/magpie-home`。
+- 2026-11-25：fork 退役：GitHub 上 `zwenooo/magpie` 归档，本地仓库和 28 个 worktree
+  打成 bundle 备份后删掉（切换记录第 25 步）。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -728,6 +730,24 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     skill 的 20 个 agent。结果：两者都在 Library 里，skill 的来源记为
     `zwenooo/magpie-plugins`（会自动更新），`magpie-artifacts` 的命令没变。临时
     源码和程序已删。
+25. **删掉 fork 源码仓库**（用户："其实我更像直接把这个fork的magpie版本给删了"，选了
+    "先打 bundle 再全删"）：GitHub 上的 `zwenooo/magpie` 已归档（只读，仍公开）。删除前
+    完整备份到 `D:\Backups\magpie-fork-final-20261125\`：`magpie-fork-all.bundle`
+    （`git bundle --all`，331 MB，verify 通过：35 个分支、1738 个 tag、1 个 stash，
+    stash 说明在 `stash-list.txt`）；`patches\` 里是两个 worktree 没提交的改动：
+    `magpie-mcp-repo-optin` 的 diff（`mcp-program-source.test.cjs`）、
+    `magpie-sync-b332ef7ef` 的未跟踪文件 tar。本地删掉了 `D:\code\magpie`（主仓库）和它的
+    28 个 worktree（`D:\code\.worktrees\magpie-*` 24 个、`D:\code\magpie\.claude\worktrees\`
+    4 个），D 盘多出 10.25 GB。删前确认过里面没有 junction / 符号链接；占用目录的是
+    一个开在 `D:\code\magpie` 的 Claude Code 窗口（用户关掉）和一个 11-24 起卡住的
+    `gh auth token`（结束掉）。没动的：`.worktrees` 里的 `ops-mcp-*`、`toolkit-*`，
+    `magpie-home`、`magpie-reclaude`、`magpie-codez`、`magpie-agent-toolkit`、
+    `magpie-sync`，`D:\Backups`，`D:\Programs\magpie`（含回滚用的 fork exe），Claude Code
+    的会话记录。配置里还留着对 `D:\code\magpie` 的引用，都是 Claude Code 自己的记录
+    （`.claude.json` 的 `projects` 和 `githubRepoPaths`，主配置和 6 个 rec 账号），无害，
+    没改；magpie 和 Codex 的配置里没有。要找回某个分支：
+    `git clone D:\Backups\magpie-fork-final-20261125\magpie-fork-all.bundle magpie-fork`，
+    再 `git checkout <分支>`（bundle 里的分支在 `origin/` 下）。
 
 还没做：
 
