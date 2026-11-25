@@ -41,7 +41,14 @@ node scripts/release.mjs <名字> --push   # 同时推送当前分支和这个 t
 | [reclaude](packages/reclaude) | ReClaude 的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明 | 0.1.2 |
 | [codez](packages/codez) | CodeZ 作为供应商，用 API 密钥登录；GPT 走 Responses、Claude 走 Messages、其他走 Chat | 0.1.0 |
 
-计划中：fork 里 Sessions 的几个功能（续接 Claude Desktop、handoff）。详见 [docs/roadmap.md](docs/roadmap.md)。
+## Skills
+
+`skills/` 下是给 magpie Library 用的 skill（不是插件）。在 Library 的 Skills 里从
+GitHub 安装，地址填 `https://github.com/zwenooo/magpie-plugins`，勾选要装的。
+
+| Skill | 作用 |
+| --- | --- |
+| [session-handoff](skills/session-handoff/SKILL.md) | 接手另一个会话的工作接着做：用 Magpie Sessions MCP 找到并读完旧会话，按 fork 的 handoff 规则汇报进度、等确认。需要先在 Library → MCP 里加 Magpie Sessions |详见 [docs/roadmap.md](docs/roadmap.md)。
 
 ## 许可
 
