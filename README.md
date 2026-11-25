@@ -38,7 +38,7 @@ node scripts/release.mjs <名字> --push   # 同时推送当前分支和这个 t
 
 | 插件 | 作用 | 状态 |
 | --- | --- | --- |
-| [reclaude](packages/reclaude) | ReClaude 的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明 | 0.1.1 |
+| [reclaude](packages/reclaude) | ReClaude 的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明 | 0.1.2 |
 
 计划中：CodeZ 供应商，以及 fork 里 Sessions 的几个功能。详见 [docs/roadmap.md](docs/roadmap.md)。
 
