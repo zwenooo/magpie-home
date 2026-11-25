@@ -22,14 +22,26 @@ github:zwenooo/magpie-plugins#<名字>-v<版本>
 
 开发时也可以直接装本地文件夹：`magpie plugin add <本仓库>/packages/<名字>`。
 
+## 发布
+
+改好、提交之后，先把 `packages/<名字>/package.json` 的 version 提上去并提交，
+然后：
+
+```sh
+node scripts/release.mjs <名字>          # 只在本地打 tag
+node scripts/release.mjs <名字> --push   # 同时推送当前分支和这个 tag
+```
+
+脚本用 HEAD 里的 `packages/<名字>` 做一个单独的提交（父提交是这个插件的上一个
+版本），打上 `<名字>-v<版本>`。这个提交不在任何分支上，靠 tag 留着。
+
 ## 插件
 
 | 插件 | 作用 | 状态 |
 | --- | --- | --- |
-| （待添加） | | |
+| [reclaude](packages/reclaude) | ReClaude 的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明 | 0.1.0 |
 
-计划中：CodeZ 供应商、ReClaude 账号跟随 Claude Code 的 Library，以及 fork 里
-Sessions 的几个功能。详见上面的 roadmap。
+计划中：CodeZ 供应商，以及 fork 里 Sessions 的几个功能。详见上面的 roadmap。
 
 ## 许可
 
