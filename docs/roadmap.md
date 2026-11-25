@@ -557,6 +557,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   提续接的 upstream issue（#7694），Desktop 转换不做。第 4 步完成。
 - 2026-11-25：换成官方 magpie 0.1.4777，装上 reclaude 和 Cursor 桥接，见「切换
   记录」。发现 `%LOCALAPPDATA%\Programs` 是 `D:\Programs` 的链接，只有一份 magpie。
+- 2026-11-25：Cursor 起初不通：先把 Cursor 从 3.14.27 升到 3.31.15，真正的原因是
+  fork 断开时恢复的 `cursor.general.disableHttp1SSE: true`，删掉后通了。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -594,6 +596,34 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
     fork 没有留下 Cursor 的模型选择）。状态 connected，Cursor 代理
     `127.0.0.1:5604`（引擎 `cursor-magpie-bridge`），控制台 `127.0.0.1:3580`。
 
+Cursor 起初不能用（用户："好像cursor不太行哦"），两个原因，都已解决：
+
+12. **Cursor 版本太旧**：用户的 Cursor 是 3.14.27（装在 `D:\sf\cursor`，8 月起没
+    更新，大概是因为 fork 的后端不支持 3.29+）。桥接只支持 3.28.x–3.31.17。
+    3.31.17 官方渠道下不到；Cursor 官方接口
+    `https://cursor.com/api/download?platform=win32-x64-user&releaseTrack=stable`
+    给的是 3.31.15（`latest` 通道是 3.32.4，超出范围）。下载
+    `CursorUserSetup-x64-3.31.15.exe`（Anysphere 签名有效，SHA256 `541387…7ac1`，
+    在 `D:\Downloads-cursor`），用户关掉 Cursor 后静默原地安装
+    （`/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /MERGETASKS=!runcode
+    /DIR=d:\sf\cursor`），退出码 0。
+13. **`cursor.general.disableHttp1SSE: true`**（真正的原因，升级后仍然超时）：
+    这一项开着、HTTP/2 又关着时，Cursor 用 `RunPoll` 收 agent 的回复，不听
+    `RunSSE`；桥接引擎发给 Cursor 的"要上下文"那条消息没人收，Cursor 只发心跳
+    （日志里每 5 秒一条 `action="none"`），60 秒后 "request context timed
+    out"。fork 的后端知道这件事（`native/cursor-backend/server/src/local_app/
+    settings.rs` 的 `SSE_OFF_KEY`）：连接时拿掉它，断开时恢复成用户原来的
+    `true`。桥接插件不管这一项。所以第 4 步断开 fork 时它被恢复成了 `true`。
+    删掉这一行后，桥接发现设置文件被改，自己暂停并还原了代理（"Cursor 代理设置
+    由其他程序改动"），`magpie cursor-bridge default` 再连接即可。之后的请求：
+    上下文 0.24 秒拿到，11 秒后 `Run ended outcome=Completed`。
+    以后不要在 Cursor 里再打开这一项。改 Cursor 的 `settings.json` 会让桥接暂停，
+    改完要断开重连。
+
+桥接找 Cursor 用的是 `%LOCALAPPDATA%\Programs\cursor`（= `D:\Programs\cursor`），
+那是一个残留文件夹（没有 Cursor.exe，有个空的 `patches`）。所以控制台读不到
+Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
+
 回滚：
 
 - 退出官方 magpie，把 `D:\Programs\magpie\magpie-rollback-fork-4728-vb3\magpie.exe`
@@ -606,7 +636,9 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
 
 还没做：
 
-- 用户在 Cursor 里新开对话、选 magpie 的模型试用（第 5 步的试用）。
+- 用户在 Cursor 里日常用几天（第 5 步的试用；第一条对话 2026-11-25 11:29 已通）。
+- Cursor 会自己更新，可能超出桥接测过的 3.31.17。要不要关掉 Cursor 的自动更新
+  由用户定。
 - 系统里还有旧的受信任 CA：本机根证书里两张早先的"Cursor BYOK Local CA"
   （2036-08-23、2036-09-22 到期，以前试 Cursor BYOK 留下的）；当前用户根证书里
   fork 的"Magpie Cursor Local CA"和同样几张旧的。要不要删由用户定。
