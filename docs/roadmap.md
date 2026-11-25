@@ -441,8 +441,10 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
      试过 `search_sessions`：刚问时"Still indexing"，约一分钟后能搜到三个 agent
      的会话。upstream 的 Library 扫描（`ProbeSkills`）能从仓库里找到这个 skill。
    - Desktop → Claude Code / Codex 转换：不做，用 handoff 代替。
-5. **用户试用 Cursor 桥接插件**，见「Cursor BYOK 与 Cursor 桥接插件」。
-6. **都能用之后，换成官方 magpie**：
+5. **Cursor 桥接插件**：2026-11-25 已装（v0.2.37）并连接，见下面「切换记录」。
+   剩下：用户在 Cursor 里实际用几天，确认能替代。
+6. **换成官方 magpie**：2026-11-25 已换（用户："你帮我做吧，首先得安装最新版的
+   官方的magpie吧"），见下面「切换记录」。原先的计划：
    - 先换 magpie，再装 reclaude（它在 fork 上什么都不做；换完以后 fork 的
      `library-follow.json` 留着也没关系，官方版不读它）；
    - 设用户环境变量 `MAGPIE_PARTNERS=off`；
@@ -450,21 +452,24 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
 
 用户说过"讨论完就开始动手"。2026-11-24 用户说"按照这个，开始吧"，第 1、2 步
 已做完；reclaude 在 fork 上装过一次出了冲突，已撤下并清理，要等换官方版时再装。
-第 3、4 步也已完成（2026-11-25）。下一步是第 5 步：用户试用 Cursor 桥接插件。
+第 3、4 步也已完成（2026-11-25）。第 6 步提前做了：已在用官方 magpie 0.1.4777，
+reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"还没做"。
 
 ## 实现时的备忘
 
-- **当前装的 magpie**：fork 版 `0.1.4728-vb.0.0.3`，装在 `D:\Programs\magpie`。
+- **当前装的 magpie**：2026-11-25 起是官方 `0.1.4777`（会自己更新），装在
+  `D:\Programs\magpie`。之前是 fork `0.1.4728-vb.0.0.3`。
   在这个会话的终端里运行它的命令时，要去掉 `CLAUDE_CONFIG_DIR`
   （`env -u CLAUDE_CONFIG_DIR …`），否则它把当前 rec 账号当成 Claude Code。
   上一版 vb.0.0.2 在 `D:\Programs\magpie\magpie-rollback-4728-2-l2p5v1w6`，
   需要回滚时放回去即可。
 - **magpie 的日志**：`%LOCALAPPDATA%\magpie\logs\app.log`，插件的输出以
   `plugin: [reclaude]` 开头。
-- **Cursor 桥接插件的安装位置假设**：它的 README 说 Windows 上 magpie 要在默认
-  位置 `%LOCALAPPDATA%\Programs\magpie`。正在跑的 magpie 在
-  `D:\Programs\magpie`；默认位置也有一份同版本的（PATH 里是它），两者都不是
-  链接。试用时要确认它找的是哪一份。
+- **只有一份 magpie**：`%LOCALAPPDATA%\Programs` 是指向 `D:\Programs` 的符号
+  链接（`dir` 在里面一层只显示 `<DIR>`，看不出来；要 `Get-Item` 看 LinkType）。
+  所以 `%LOCALAPPDATA%\Programs\magpie` 就是 `D:\Programs\magpie`。之前以为有
+  两份是错的；2026-11-25 切换时因此把它改名了一次，马上改回来了。Cursor 桥接
+  插件找的 `%LOCALAPPDATA%\Programs\magpie\magpie.exe` 就是这一份。
 - **沙箱**：本会话 scratchpad 里的 `upstream` 是 upstream 的临时 worktree
   （`git worktree list` 能看到，用完 `git worktree remove`），`bin\magpie.exe`
   是从它编出来的。沙箱里跑 magpie 要设 `USERPROFILE`、`HOME`、`APPDATA`、
@@ -550,3 +555,65 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
   放 `~/.claude-imports/<名字>/` 即可（实测）。
 - 2026-11-25：用户定：handoff 做 Library skill（`skills/session-handoff`），
   提续接的 upstream issue（#7694），Desktop 转换不做。第 4 步完成。
+- 2026-11-25：换成官方 magpie 0.1.4777，装上 reclaude 和 Cursor 桥接，见「切换
+  记录」。发现 `%LOCALAPPDATA%\Programs` 是 `D:\Programs` 的链接，只有一份 magpie。
+
+## 切换记录（2026-11-25 10:50–11:00）
+
+做了什么，按顺序：
+
+1. 下载官方 `v0.1.4777` 的 `magpie-windows-amd64.exe`，SHA256 和 release 的
+   `SHA256SUMS` 一致（`d3d5b9cf…02e2`），`gh attestation verify … -R
+   yetone/magpie-releases` 通过。下载在 `D:\Downloads-magpie-official`。
+2. 备份 Cursor 的 `settings.json`（fork 接管时：代理 `127.0.0.1:5532`、HTTP/2 关、
+   系统证书开）。
+3. fork 是托盘程序，关闭信号只会隐藏窗口；GUI 的接口不走 TCP，没法从外面让它
+   正常退出，所以 `taskkill /F /T` 结束了它和子进程（插件宿主、Cursor 后端、它
+   启动的 MCP 服务）。
+4. 用 fork 的 `magpie cursor-byok default` 按它的记录把 Cursor 设置恢复成接管前的
+   样子（运行中的 fork 持有锁时这条命令会被拒绝，要先结束 fork）。
+5. 完整备份 `~/.config/magpie`（8300 个文件，1.69 GB）。
+6. fork 的 exe 移到 `D:\Programs\magpie\magpie-rollback-fork-4728-vb3\`，官方 exe
+   放成 `D:\Programs\magpie\magpie.exe`。用户 PATH 里的
+   `%LOCALAPPDATA%\Programs\magpie` 换成 `D:\Programs\magpie`（同一个文件夹）。
+   设用户环境变量 `MAGPIE_PARTNERS=off`。
+7. 用 `explorer.exe` 启动官方版，让它拿到登录环境，而不是 Claude 会话里的
+   `CLAUDE_CONFIG_DIR` 和 ReClaude 代理（日志里代理是系统的 7890，对）。
+8. 检查：9 个供应商都在（包括 3 个 `preset: codez` 的，官方版忽略不认识的预设，
+   地址照用），网关 30 个模型。
+9. 装 `reclaude-v0.1.2`：13 个 junction，13 个 `claude#rec-<id>` 行，勾选全部跟
+   `claude` 行一致，没有 `-2`，一次 `library sync` 35 秒。12 个账号的 hub 是
+   `/hub/claude%23rec-<id>`；57658 有手加的 `magpie` 条目，官方版说
+   "has an MCP server called magpie of its own, so it keeps each server's own
+   entry"，即这个账号不走 hub，每个 server 单独写，也能用。
+10. 装 Cursor 桥接 `v0.2.37`（插件页同款 `magpie plugin add`），装进来的文件和
+    审过的 tag 一致（只有 `.bun-tag` 不同）。在包目录 `node install.js setup`：
+    用户点了 UAC，CA（`Cursor BYOK Local CA`，2036-11-24 到期）进了本机根证书；
+    自启是启动文件夹的 `local.magpie.cursor-bridge.vbs`。
+11. `magpie cursor-bridge rex2/claude-opus-5-5` 连接（默认模型，Cursor 里可以换；
+    fork 没有留下 Cursor 的模型选择）。状态 connected，Cursor 代理
+    `127.0.0.1:5604`（引擎 `cursor-magpie-bridge`），控制台 `127.0.0.1:3580`。
+
+回滚：
+
+- 退出官方 magpie，把 `D:\Programs\magpie\magpie-rollback-fork-4728-vb3\magpie.exe`
+  放回 `D:\Programs\magpie\magpie.exe`；配置要回到切换前，用
+  `D:\Backups\magpie-switch-20261125-105127\config-magpie` 覆盖
+  `~/.config/magpie`。Cursor 的设置在同一个备份文件夹的 `cursor-settings.json`。
+- 回到 fork 前要先 `magpie plugin rm` 掉 reclaude（fork 上它什么都不做，但
+  junction 会让 fork 出现 `-2` 行，要删掉 `~/.claude-rec-*`），以及
+  `magpie cursor-bridge default` 断开桥接。
+
+还没做：
+
+- 用户在 Cursor 里新开对话、选 magpie 的模型试用（第 5 步的试用）。
+- 系统里还有旧的受信任 CA：本机根证书里两张早先的"Cursor BYOK Local CA"
+  （2036-08-23、2036-09-22 到期，以前试 Cursor BYOK 留下的）；当前用户根证书里
+  fork 的"Magpie Cursor Local CA"和同样几张旧的。要不要删由用户定。
+- 57658 那条手加的 `magpie` 条目要不要删（删了它也走 hub）。
+- CodeZ 插件：装上、三把密钥各登录一次、删掉三个旧的 CodeZ 供应商。会改变
+  `codez-2/…`、`cz-gemini/…` 这些模型名，agent 里选过它们的要重选，所以等用户
+  决定。
+- handoff skill：用户在 Library 里装 `session-handoff`，并加 Magpie Sessions MCP。
+- fork 留下的文件（`~/.config/magpie/cursor-backend/`、`library-follow.json`）
+  官方版不读，留着无害，确认不回滚后可以删。
