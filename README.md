@@ -1,7 +1,11 @@
-# magpie-plugins
+# magpie-home
 
 zwenooo 自己用的 [magpie](https://github.com/yetone/magpie) 扩展的总入口。magpie
-本体只用官方版，所有扩展功能都做成插件或 skill。
+本体只用官方版，所有扩展功能都做成插件或 skill。本仓库不放插件代码（插件各有
+自己的仓库，见下表），只放 skill、迁移记录和这份说明。
+
+本仓库原名 `zwenooo/magpie-plugins`，2026-11-25 改名（拆仓库后里面已经没有插件，
+旧名字容易误会）。GitHub 会把旧地址转到这里。
 
 背景、迁移计划和每一步的记录见 [docs/roadmap.md](docs/roadmap.md)。
 
@@ -27,7 +31,7 @@ zwenooo 自己用的 [magpie](https://github.com/yetone/magpie) 扩展的总入�
 ## Skills
 
 `skills/` 下是给 magpie Library 用的 skill。在 Library 的 Skills 里从 GitHub 安装，
-地址填 `https://github.com/zwenooo/magpie-plugins`，勾选要装的；之后会跟着本仓库自动
+地址填 `https://github.com/zwenooo/magpie-home`，勾选要装的；之后会跟着本仓库自动
 更新。
 
 | Skill | 作用 |

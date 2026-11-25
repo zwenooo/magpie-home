@@ -4,7 +4,7 @@
 回答的问题。讨论还在继续：每次有新结论，就在对应小节更新，并在最后的
 「讨论记录」里按日期追加一行。
 
-记在插件仓库里（`D:\code\magpie-plugins\docs\roadmap.md`），而不是 Claude
+记在 magpie-home 仓库里（`D:\code\magpie-home\docs\roadmap.md`），而不是 Claude
 的记忆或 Claude Docs 里，是因为这台电脑上每个 ReClaude 账号都是一个独立的
 Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；仓库里的文件每个
 账号都能读到。fork 仓库（`D:\code\magpie`）不再改动，连这份记录也不放在
@@ -14,8 +14,8 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 
 - **回归官方 magpie。** magpie 本体只用 upstream 的代码，不改原版代码。
 - **所有扩展功能都做成插件**，维护在
-  [zwenooo/magpie-plugins](https://github.com/zwenooo/magpie-plugins)
-  （公开仓库，MIT）。fork 不再加新功能。
+  [zwenooo/magpie-plugins](https://github.com/zwenooo/magpie-home)
+  （公开仓库，MIT；拆仓库后改名为 magpie-home，见切换记录第 24 步）。fork 不再加新功能。
 - 第三方供应商、第三方工具的代码（ReClaude、CodeZ 等）只出现在插件里。
 - 讨论完就开始动手；迁出一项一项来，每一步都要能用。
 
@@ -27,8 +27,9 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
   `D:\code\magpie-reclaude`，安装 `github:zwenooo/magpie-reclaude`；
 - [zwenooo/magpie-codez](https://github.com/zwenooo/magpie-codez)，本地
   `D:\code\magpie-codez`，安装 `github:zwenooo/magpie-codez`；
-- 本仓库 `zwenooo/magpie-plugins`（本地 `D:\code\magpie-plugins`）留着 skill
-  （`skills/`）、这份 roadmap 和总的说明。
+- 本仓库 [zwenooo/magpie-home](https://github.com/zwenooo/magpie-home)（本地
+  `D:\code\magpie-home`，原名 `magpie-plugins`）留着 skill（`skills/`）、这份
+  roadmap 和总的说明，不放插件代码。
 
 包在各自仓库的根目录，所以 magpie（bun 装 `github:owner/repo#ref`，只能装根目录的
 包）可以直接装，不用再拼提交。不带 `#…` 安装时跟着 `main`，magpie 按提交号提示
@@ -440,7 +441,7 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
    - 续接别的配置文件夹的会话：提了 upstream issue
      [yetone/magpie#7694](https://github.com/yetone/magpie/issues/7694)。
    - handoff：skill `skills/session-handoff`，在 Library 里从
-     `https://github.com/zwenooo/magpie-plugins` 安装；要用的 agent 还要在
+     `https://github.com/zwenooo/magpie-home` 安装；要用的 agent 还要在
      Library → MCP 里加上 Magpie Sessions（MCP 市场里有）。2026-11-25 在 fork 上
      试过 `search_sessions`：刚问时"Still indexing"，约一分钟后能搜到三个 agent
      的会话。upstream 的 Library 扫描（`ProbeSkills`）能从仓库里找到这个 skill。
@@ -569,6 +570,7 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   `zwenooo/magpie-reclaude`、`zwenooo/magpie-codez`，已装的换成新地址。
 - 2026-11-25：reclaude 0.2 共享会话：所有 rec 账号共用 `~/.rec-sessions`，记忆也随之
   共用并按行合并。
+- 2026-11-25：`zwenooo/magpie-plugins` 改名 `zwenooo/magpie-home`。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -699,6 +701,13 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     马上接上。沙箱（官方 magpie，`shareSessions` 开）里新建账号 555：2 秒内 Library 行、
     `/hub/claude%23rec-555`、`projects`、`file-history` 都好了，并能看到 333 原有的会话。
     新账号全自动，前提是 magpie 开着；magpie 没开时开过会话的账号，之后空闲 10 分钟再合并。
+24. **本仓库改名 magpie-home**（用户："那这个仓库名有点误导我了"，选了 magpie-home）：
+    拆仓库后这里只剩 skill 和记录，`magpie-plugins` 读起来像插件仓库。GitHub 上
+    `gh repo rename`，本地文件夹改成 `D:\code\magpie-home`，remote 改成新地址；
+    Library 里 session-handoff 的来源（`library.json` 的 `source.repo` 和
+    `seenSkills` 的键）改成 `zwenooo/magpie-home`，再 `magpie library sync`；
+    两个插件 README 的"原先在"链接指向新地址。上面第 20、21 步按当时的名字记，没改。
+    旧地址 GitHub 会转过来，旧 tag 也还在。
 22. **两个插件换地址后又被移除了**（用户："怎么插件我看到已安装里，没有codez"）：
     reclaude 在 12:20–12:22 之间、codez 在 12:22:33 从 `plugins.json` 里没了，
     包也被删了。magpie 只有用户移除时才删插件（`provider.RemovePlugin` →
