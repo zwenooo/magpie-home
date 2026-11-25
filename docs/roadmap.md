@@ -31,6 +31,15 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
   `D:\code\magpie-home`，原名 `magpie-plugins`）留着 skill（`skills/`）、这份
   roadmap 和总的说明，不放插件代码。
 
+**插件市场**（2026-11-25）：magpie 插件页的列表是 `magpie-community/plugins` 的
+`registry.json`（upstream `internal/plugin/market.go`，每 6 小时拉一次），条目只认
+npm 包名；不带 `"community": true` 的条目只在搜索时出现，显示在发布者名下。CodeZ
+发到了 npm（`magpie-plugin-codez`，账号 `zwn2027`，2FA 只有安全密钥），登记 PR 是
+[magpie-community/plugins#1546](https://github.com/magpie-community/plugins/pull/1546)。
+发版流程见 magpie-codez 的 README（`npm stage publish` 后网页批准）。注册 npm 时网页
+注册页拦了 DMIT 的出口 IP，命令行建账号已被 npm 关掉，用户换网络注册的。ReClaude
+不登记：`kind` 不合适，还会改 `library.json`、建 junction，审核大概率不过。
+
 包在各自仓库的根目录，所以 magpie（bun 装 `github:owner/repo#ref`，只能装根目录的
 包）可以直接装，不用再拼提交。不带 `#…` 安装时跟着 `main`，magpie 按提交号提示
 更新（upstream `internal/plugin/gitrev.go`）。发布：改 `package.json` 的 version、
@@ -575,6 +584,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   打成 bundle 备份后删掉（切换记录第 25 步）。
 - 2026-11-25：用户确定不回滚 fork，回滚用的 exe、配置备份和 fork 残留都清掉
   （切换记录第 26 步）。
+- 2026-11-25：CodeZ 上架：发到 npm（`magpie-plugin-codez` 0.1.2），提登记 PR #1546；
+  ReClaude 不上架，见「插件和仓库」。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
