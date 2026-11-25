@@ -45,7 +45,7 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 | --- | --- | --- |
 | Cursor BYOK（普通 Cursor 用 magpie 的模型） | 改用社区的 Cursor 桥接插件，见下文 | 待试用 |
 | 自己的发布和应用内更新 | 回归官方版后用官方的更新 | fork 退役时去掉 |
-| CodeZ 预设 | 自己仓库里做一个供应商插件，装上就能把 CodeZ 配成供应商，见下文 | 待做 |
+| CodeZ 预设 | 插件 `codez` 0.1.0，见下文 | 写好了，沙箱里用真实密钥实测通过 |
 | 默认关闭合作推广 | 不用插件：upstream 有开关，见下文 | 已查明 |
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
 | Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | 做成插件；能用哪个插件扩展点还没查 | 待分析 |
@@ -107,11 +107,42 @@ fork 里 CodeZ 的行为，插件要做到：
 - GPT、Codex、o 系列模型优先走 Responses API，其他模型走 Chat，Claude 走
   Messages（fork 的 `forkResponsesFirst`）。
 
-可用的 upstream 扩展点是供应商插件（OpenCode 插件）：`config` 钩子声明
-`cfg.provider[id]`（含 `api` 地址），`auth` 钩子提供"填 API 密钥"的登录方式，
-见 upstream 的 `docs/subsystems/provider-plugins.md`。还没查清的：插件怎样让
-magpie 自动拉取模型列表，以及怎样按模型选 Responses 或 Chat。实现时先找一个
-现成的密钥类社区插件当模板。
+**已实现**：插件 `packages/codez`（0.1.0，tag `codez-v0.1.0`）。
+
+- 扩展点是供应商插件（OpenCode 插件）：`config` 声明 `cfg.provider.codez`，
+  `auth` 提供"填 API 密钥"，`provider.models` 用每把密钥问 `/v1/models`。模板是
+  社区的 River 插件（`magpie-community/plugins` 的 `packages/river`）。
+- 按模型选接口：模型钩子返回的每个模型带 `api: {url, npm}`，magpie 按 npm 定接口
+  （upstream `internal/provider/plugins.go` 的 `pluginProtocol`）：
+  `@ai-sdk/openai` → Responses，`@ai-sdk/anthropic` → Messages，其他 → Chat。
+  `also` 写这个模型还能走的其他接口，客户端用那些接口发来的请求原样转发。
+  地址三种都是 `https://api.codezsy.com/v1`。
+- 选法和 fork 一样：GPT、Codex、o 系列（upstream 的 `openAIModel` 规则）走
+  Responses，Claude 走 Messages，其他走 Chat。CodeZ 的 `/v1/models` 带
+  `supported_endpoint_types`（`openai` = Chat，`openai-response`，`anthropic`，
+  `gemini`），用来填 `also`。但 GPT 模型在里面只标了 `openai`，所以 GPT 不按它来。
+- 2026-11-25 用户三把密钥的 `/v1/models`：`codez` 23 个（Claude 和 GPT），
+  `codez-2`（国模）6 个，`cz-gemini` 5 个。`/api/usage/token` 返回 404，
+  `/v1/dashboard/billing/subscription` 的 `quota_details_hidden: true`，读不到
+  额度，所以用量钩子只检查密钥。
+- 沙箱实测（upstream `e6f4af3f9`，`magpie serve` 换端口，用户的真实密钥，测完
+  已从沙箱删除）：
+  - 第一把密钥登录后 23 个模型；`codez/gpt-5.6-luna` 走 Chat 入口，日志是
+    `chat→responses 200`；`codez/claude-haiku-4-5-20251001` 走 Messages 入口，
+    `anthropic→anthropic 200`。
+  - 再登录国模那把：供应商有 29 个模型；网关刷新前，`codez/deepseek-v4-flash`
+    被发给了第一把密钥，CodeZ 拒绝（"无可用计费分组"）；刷新后（约一分钟）发给
+    第二把，`chat→chat 200`。终端里登录新密钥后，正在运行的 magpie 要过一会才
+    知道。
+  - 超过 24 个模型又没挑选时，magpie 只放出前 24 个（magpie 自己的规则）。
+- 和现有供应商并存：magpie 里已有 id 为 `codez` 的供应商时，插件的叫
+  `codez-plugin`（`PluginID`：撞上预设或用户自己的供应商 id 就加 `-plugin`）。
+  在 fork 上 `codez` 是预设，所以总是 `codez-plugin`。换到官方版后，fork 留下的
+  三个 CodeZ 供应商（`codez`、`codez-2`、`cz-gemini`，地址都写在
+  `providers.json` 里）仍能当普通中转站用；在插件里登录三把密钥、删掉这三个
+  以后，插件的供应商就叫 `codez`，`codez/<模型>` 这些名字还能对上。
+- 还没装到正在用的 magpie。fork 上装会多出一套 `codez-plugin/…` 模型，没有必要；
+  换官方版时再装。
 
 ## 合作推广
 
@@ -347,7 +378,8 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
      大约 3 分钟，要看来不来得及；
    - 57658 的 `.claude.json` 里那条手加的裸 `/hub` 条目，magpie 当作用户的值
      保留着（其他账号是 `/hub/claude%23rec-<id>`）。能用，要不要换由用户定。
-3. **CodeZ 供应商插件**，见「CodeZ」。
+3. **CodeZ 供应商插件**：完成（0.1.0），见「CodeZ」。换官方版时装上，三把密钥
+   各登录一次，再删掉 fork 留下的三个 CodeZ 供应商。
 4. **分析 Claude Desktop 续接和 handoff** 能用哪个插件扩展点。
 5. **用户试用 Cursor 桥接插件**，见「Cursor BYOK 与 Cursor 桥接插件」。
 6. **都能用之后，换成官方 magpie**：
@@ -358,7 +390,7 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
 
 用户说过"讨论完就开始动手"。2026-11-24 用户说"按照这个，开始吧"，第 1、2 步
 已做完；reclaude 在 fork 上装过一次出了冲突，已撤下并清理，要等换官方版时再装。
-下一步是第 3 步 CodeZ 插件。
+第 3 步 CodeZ 插件也已完成（2026-11-25）。下一步是第 4 步。
 
 ## 实现时的备忘
 
@@ -450,3 +482,5 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
   `-2` 行），撤下插件、删掉 junction、清理了 `library.json` 和
   `library-follow.json`，fork 恢复正常，57658 也由 fork 跟随上了。插件 0.1.2
   在 fork 上不运行。reclaude 等换官方版时再装。
+- 2026-11-25：CodeZ 插件 0.1.0 完成，按模型选 Responses / Messages / Chat，
+  多把密钥挂在同一个供应商下。沙箱里用真实密钥实测通过。
