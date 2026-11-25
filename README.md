@@ -3,8 +3,7 @@
 zwenooo 自己用的 [magpie](https://github.com/yetone/magpie) 插件。magpie
 本体只用官方版，所有扩展功能都以插件形式维护在这里。
 
-背景和迁移计划见 zwenooo/magpie 的
-[docs/fork-roadmap.md](https://github.com/zwenooo/magpie/blob/main/docs/fork-roadmap.md)。
+背景、迁移计划和每一步的记录见 [docs/roadmap.md](docs/roadmap.md)。
 
 ## 目录
 
@@ -41,7 +40,7 @@ node scripts/release.mjs <名字> --push   # 同时推送当前分支和这个 t
 | --- | --- | --- |
 | [reclaude](packages/reclaude) | ReClaude 的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明 | 0.1.0 |
 
-计划中：CodeZ 供应商，以及 fork 里 Sessions 的几个功能。详见上面的 roadmap。
+计划中：CodeZ 供应商，以及 fork 里 Sessions 的几个功能。详见 [docs/roadmap.md](docs/roadmap.md)。
 
 ## 许可
 
