@@ -23,8 +23,8 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 
 2026-11-25 起每个插件一个仓库（用户问"为啥不能分两个仓库？"，选了每个插件一个仓库）：
 
-- [zwenooo/magpie-reclaude](https://github.com/zwenooo/magpie-reclaude)，本地
-  `D:\code\magpie-reclaude`，安装 `github:zwenooo/magpie-reclaude`；
+- [zwenooo/magpie-recode](https://github.com/zwenooo/magpie-recode)（显示名 ReCode，0.3.0 前叫
+  `magpie-reclaude`），本地 `D:\code\magpie-recode`，安装 `github:zwenooo/magpie-recode`；
 - [zwenooo/magpie-codez](https://github.com/zwenooo/magpie-codez)，本地
   `D:\code\magpie-codez`，安装 `github:zwenooo/magpie-codez`；
 - 本仓库 [zwenooo/magpie-home](https://github.com/zwenooo/magpie-home)（本地
@@ -62,7 +62,7 @@ npm 包名；不带 `"community": true` 的条目只在搜索时出现，显示�
 | 默认关闭合作推广 | 不用插件：upstream 有开关，见下文 | 已查明 |
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
 | Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | handoff 用 skill `session-handoff`；续接缺口提了 upstream issue #7694；Desktop 转换不做，见「Sessions」 | 已完成 |
-| Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 [magpie-reclaude](https://github.com/zwenooo/magpie-reclaude)：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 已装（官方版上） |
+| Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 [magpie-recode](https://github.com/zwenooo/magpie-recode)（原 magpie-reclaude）：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 已装（官方版上） |
 | （新）换 rec 账号后接着聊旧对话 | magpie-reclaude 0.2 的 `shareSessions`：所有账号共用 `~/.rec-sessions` | 已开启 |
 | 8 个 upstream 代码修复（FORK.md「Fixes inside upstream code」） | 不改原版代码，回归时一起放弃，见下文 | 已决定 |
 
@@ -586,6 +586,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   （切换记录第 26 步）。
 - 2026-11-25：CodeZ 上架：发到 npm（`magpie-plugin-codez` 0.1.2），提登记 PR #1546；
   ReClaude 不上架，见「插件和仓库」。
+- 2026-11-25：reclaude 改名 ReCode（0.3.0，`zwenooo/magpie-recode`，带 recode.cat 的 logo），
+  已装的换成新地址（切换记录第 27 步）。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -772,6 +774,15 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     留着。另外从 `.claude.json`（主配置和 48142、54086、54687、55795、57545、57658）
     删掉了 `projects["D:/code/magpie"]` 和 `githubRepoPaths["zwenooo/magpie"]` 里的
     这个路径。
+27. **reclaude 改名 ReCode**（用户："名字改成recode相关的"，logo 用
+    `https://www.recode.cat/logo/logo-single.svg`）：0.3.0，包名 `magpie-plugin-recode`，
+    `package.json` 的 `magpie.name` 是 ReCode、`magpie.icon` 是这个 logo，加了
+    `magpie.summary`；日志前缀 `[recode]`。GitHub 仓库 `gh repo rename` 成
+    `zwenooo/magpie-recode`（旧地址会转过来），本地文件夹改成 `D:\code\magpie-recode`。
+    junction、账号行、共享文件夹、锁文件夹的名字都没改，换装不动磁盘上的东西。已装的：
+    `magpie plugin rm github:zwenooo/magpie-reclaude`、`add github:zwenooo/magpie-recode`、
+    `plugin options … '{"shareSessions":true}'`（选项跟着地址，要重设）；之后 13 个
+    junction 和 13 个账号的共享 `projects` 都在。按第 22 步的教训，改完要刷新插件页再操作。
 
 还没做：
 

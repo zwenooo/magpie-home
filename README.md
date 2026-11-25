@@ -17,8 +17,8 @@ zwenooo 自己用的 [magpie](https://github.com/yetone/magpie) 扩展的总入�
 
 | 插件 | 地址 | 作用 |
 | --- | --- | --- |
-| [reclaude](https://github.com/zwenooo/magpie-reclaude) | `github:zwenooo/magpie-reclaude` | ReClaude 的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明（只用于官方版 magpie） |
-| [codez](https://github.com/zwenooo/magpie-codez) | `github:zwenooo/magpie-codez` | CodeZ 作为供应商，用 API 密钥登录；GPT 走 Responses、Claude 走 Messages、其他走 Chat |
+| [ReCode](https://github.com/zwenooo/magpie-recode)（原 reclaude） | `github:zwenooo/magpie-recode` | ReCode（ReClaude）的每个账号成为 Library 的 `claude#rec-<id>` 行，跟随 Claude Code 的 MCP、skill 和说明；可选共享会话（只用于官方版 magpie） |
+| [codez](https://github.com/zwenooo/magpie-codez) | `github:zwenooo/magpie-codez`，或 npm 的 `magpie-plugin-codez` | CodeZ 作为供应商，用 API 密钥登录；GPT 走 Responses、Claude 走 Messages、其他走 Chat |
 
 这两个插件原先放在本仓库的 `packages/` 下，2026-11-25 拆成了独立仓库（历史一并
 带过去）。本仓库里旧的 tag（`reclaude-v0.1.0`…`reclaude-v0.1.2`、`codez-v0.1.0`）
