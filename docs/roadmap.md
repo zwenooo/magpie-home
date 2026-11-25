@@ -48,7 +48,7 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 | CodeZ 预设 | 插件 `codez` 0.1.0，见下文 | 写好了，沙箱里用真实密钥实测通过 |
 | 默认关闭合作推广 | 不用插件：upstream 有开关，见下文 | 已查明 |
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
-| Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | 大部分 upstream 已有或不用插件，见「Sessions」 | 已分析，待用户定 |
+| Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | handoff 用 skill `session-handoff`；续接缺口提了 upstream issue #7694；Desktop 转换不做，见「Sessions」 | 已完成 |
 | Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 `reclaude`：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 写好了；不能装在 fork 上，换官方版时再装 |
 | 8 个 upstream 代码修复（FORK.md「Fixes inside upstream code」） | 不改原版代码，回归时一起放弃，见下文 | 已决定 |
 
@@ -197,6 +197,8 @@ upstream 给插件的扩展点（`internal/plugin/page.go`）：
 - 插件工具：作为 MCP 工具给所有 agent。
 
 逐项结论：
+
+（用户 2026-11-25 选了：handoff 做 skill；只提续接那个 issue。）
 
 1. **导入别的文件夹**：不用插件。
    - ReClaude 账号：`reclaude` 插件的 junction。
@@ -429,10 +431,16 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
      保留着（其他账号是 `/hub/claude%23rec-<id>`）。能用，要不要换由用户定。
 3. **CodeZ 供应商插件**：完成（0.1.0），见「CodeZ」。换官方版时装上，三把密钥
    各登录一次，再删掉 fork 留下的三个 CodeZ 供应商。
-4. **分析 Claude Desktop 续接和 handoff**：完成，见「Sessions 的分析」。
-   建议：导入不用插件；续接缺 `CLAUDE_CONFIG_DIR` 给 upstream 提 issue；
-   handoff 用 Library skill + upstream 的 `magpie-sessions` MCP；Desktop 转换
-   先不做，用 handoff 代替。待用户定。
+4. **Claude Desktop 续接和 handoff**：完成（2026-11-25，用户按建议定）。
+   - 导入：不用插件（rec 账号靠 reclaude；拷贝放 `~/.claude-imports/<名字>/`）。
+   - 续接别的配置文件夹的会话：提了 upstream issue
+     [yetone/magpie#7694](https://github.com/yetone/magpie/issues/7694)。
+   - handoff：skill `skills/session-handoff`，在 Library 里从
+     `https://github.com/zwenooo/magpie-plugins` 安装；要用的 agent 还要在
+     Library → MCP 里加上 Magpie Sessions（MCP 市场里有）。2026-11-25 在 fork 上
+     试过 `search_sessions`：刚问时"Still indexing"，约一分钟后能搜到三个 agent
+     的会话。upstream 的 Library 扫描（`ProbeSkills`）能从仓库里找到这个 skill。
+   - Desktop → Claude Code / Codex 转换：不做，用 handoff 代替。
 5. **用户试用 Cursor 桥接插件**，见「Cursor BYOK 与 Cursor 桥接插件」。
 6. **都能用之后，换成官方 magpie**：
    - 先换 magpie，再装 reclaude（它在 fork 上什么都不做；换完以后 fork 的
@@ -442,7 +450,7 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
 
 用户说过"讨论完就开始动手"。2026-11-24 用户说"按照这个，开始吧"，第 1、2 步
 已做完；reclaude 在 fork 上装过一次出了冲突，已撤下并清理，要等换官方版时再装。
-第 3 步 CodeZ 插件也已完成（2026-11-25）。第 4 步分析完，等用户对建议拍板。
+第 3、4 步也已完成（2026-11-25）。下一步是第 5 步：用户试用 Cursor 桥接插件。
 
 ## 实现时的备忘
 
@@ -540,3 +548,5 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
   Claude Code ↔ Codex 互转、`magpie-sessions` MCP；缺的是别的配置文件夹的续接
   （`CLAUDE_CONFIG_DIR`）和 Desktop → Claude Code / Codex 的转换。别的电脑的拷贝
   放 `~/.claude-imports/<名字>/` 即可（实测）。
+- 2026-11-25：用户定：handoff 做 Library skill（`skills/session-handoff`），
+  提续接的 upstream issue（#7694），Desktop 转换不做。第 4 步完成。
