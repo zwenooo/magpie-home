@@ -166,6 +166,12 @@ fork 里 CodeZ 的行为，插件要做到：
   （upstream `host.js` 的 `apiKey`）；loader 给的 baseURL 优先于模型行里的地址
   （`plugins.go` 的 `pluginRequestBase`）。命令行和窗口都会问。沙箱里试过预置和
   自填两种。0.2.0 之前登录的账号没有记地址，照旧走 `api.codezsy.com`。
+- 0.3.0（同日）：按用户要求，预置改成 `api-cfmax.codezsy.com`（CF 优选节点）、
+  `codezsy.com`（主站）、`api-s.codezsy.com`（多节点中转，不过 CF），每个带说明：
+  命令行显示在选项后面，窗口里是按钮的 `title`（悬停提示，`app.js` 的
+  `renderPluginAsk`）。magpie 不给插件放"感叹号"图标，要的话得改 magpie 本身。
+  说明里写了前两个经过 Cloudflare 的 100 秒限制（运维文档里画布接口因此改走
+  `api.codezsy.com`）。
 
 ## 合作推广
 
