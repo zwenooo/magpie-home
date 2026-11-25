@@ -667,11 +667,20 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     `magpie cursor-bridge default` 断开、改设置、再
     `magpie cursor-bridge auto/gemini-4-argon` 连接，状态 connected。
 19. 删掉了 fork 仓库里登记的临时 upstream worktree（`git worktree remove`）。
+20. **handoff**（用户："你来做"）：官方版的命令行装不了 skill，只能在 Library 页面装。
+    所以在 v0.1.4777 的源码里，往 `internal/library` 加了一个一次性的文件，调用
+    页面背后的同一套函数：`InstallServer("magpie-sessions", …)` 和
+    `InstallSkills("https://github.com/zwenooo/magpie-plugins",
+    ["skills/session-handoff"], …)`。注意：Library 每次读 `library.json` 都会用
+    `selfExe`（当前程序）改写 magpie 自带 MCP 的命令，所以先把 `selfExe` 固定成
+    `D:\Programs\magpie\magpie.exe`，再做一次只读检查确认没写文件。勾选照搬已有
+    skill 的 20 个 agent。结果：两者都在 Library 里，skill 的来源记为
+    `zwenooo/magpie-plugins`（会自动更新），`magpie-artifacts` 的命令没变。临时
+    源码和程序已删。
 
 还没做：
 
 - 用户在 Cursor 里日常用几天（第 5 步的试用）。
-- handoff skill：用户在 Library 里装 `session-handoff`，并加 Magpie Sessions MCP。
 - fork 留下的文件（`~/.config/magpie/cursor-backend/`、`library-follow.json`）
   官方版不读，留着无害，确认不回滚后可以删；`D:\Programs\cursor`（=
   `%LOCALAPPDATA%\Programs\cursor`）是 Cursor 的残留文件夹，同理。
