@@ -53,6 +53,7 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
 | Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | handoff 用 skill `session-handoff`；续接缺口提了 upstream issue #7694；Desktop 转换不做，见「Sessions」 | 已完成 |
 | Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 [magpie-reclaude](https://github.com/zwenooo/magpie-reclaude)：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 已装（官方版上） |
+| （新）换 rec 账号后接着聊旧对话 | magpie-reclaude 0.2 的 `shareSessions`：所有账号共用 `~/.rec-sessions` | 已开启 |
 | 8 个 upstream 代码修复（FORK.md「Fixes inside upstream code」） | 不改原版代码，回归时一起放弃，见下文 | 已决定 |
 
 ## Cursor BYOK 与 Cursor 桥接插件
@@ -566,6 +567,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   关掉 Cursor 自动更新。
 - 2026-11-25：handoff skill 和 Magpie Sessions 装进 Library；两个插件拆成独立仓库
   `zwenooo/magpie-reclaude`、`zwenooo/magpie-codez`，已装的换成新地址。
+- 2026-11-25：reclaude 0.2 共享会话：所有 rec 账号共用 `~/.rec-sessions`，记忆也随之
+  共用并按行合并。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -677,6 +680,21 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     `magpie plugin rm` 旧地址、`add` 新地址：codez 的三把密钥、34 个模型、13 个
     挑选和上下文都还在，请求正常；13 个 junction 和跟随都还在。换之前的配置备份在
     切换备份文件夹的 `before-repo-split/`。
+23. **共享会话**（用户："我经常换rec账号……只能让ai帮我找到对话，然后fork session到B账号
+    来重新打开"；选了方案一，并说 ReClaude 不会删旧账号文件夹）：reclaude 0.2.0 加
+    `shareSessions`：每个账号的 `projects/`、`file-history/` 换成指向
+    `~/.rec-sessions/` 的 junction，任何账号 `/resume` 都能看到所有账号的对话。新账号在
+    第一次会话前接上；已有账号等 10 分钟没写入再合并（文件在同一个盘里移动）。magpie
+    的 Sessions 按会话 id 去重（`claudeFiles`），不会重复。动手前把 13 个账号的
+    `projects`、`file-history` 备份到切换备份文件夹的 `rec-sessions-before-share/`
+    （3309 个文件，841.7 MB，和源文件数一致）。用 `magpie plugin options
+    github:zwenooo/magpie-reclaude '{"shareSessions":true}'` 打开。
+    第一轮 11 个账号合并了；冲突全是项目记忆（`projects/<项目>/memory/`，共享
+    `projects` 也就共享了记忆）：0.2.0 只留最新的 `MEMORY.md`，28 个记忆文件被放进
+    `conflicts/`。0.2.1 改为 `MEMORY.md` 按行合并、同名不同内容的笔记另存
+    `<名字>.from-<账号>.md` 并加索引行，启动时把放进 `conflicts/` 的 28 个补回，
+    `conflicts/` 清空。验证：48142 原本没有 magpie 项目的会话，现在能看到 57545 的
+    `75bf822f`。56156、57658 的 `projects` 当时有会话在写，空闲后会自动合并。
 22. **两个插件换地址后又被移除了**（用户："怎么插件我看到已安装里，没有codez"）：
     reclaude 在 12:20–12:22 之间、codez 在 12:22:33 从 `plugins.json` 里没了，
     包也被删了。magpie 只有用户移除时才删插件（`provider.RemovePlugin` →
