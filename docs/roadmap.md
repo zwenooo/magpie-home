@@ -33,6 +33,9 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
   （用本地 `git+file:` 试的；本机另装的 bun 1.2.21 装 `git+file:` 会崩）。
   upstream 的 `IsGit` 接受 `github:…#<tag>`，更新检查也按 tag 指向的提交比较
   （`internal/plugin/gitrev.go`）。从 GitHub 装还没试，要先推送 tag。
+- 2026-11-25 已推送 `reclaude-v0.1.0`、`reclaude-v0.1.1`，在正在用的 magpie
+  上用 `magpie plugin add github:zwenooo/magpie-plugins#reclaude-v0.1.1` 从
+  GitHub 装上过（能装）。后来因为和 fork 冲突撤下了，见「ReClaude 与配置跟随」。
 
 ## fork 功能的去向
 
@@ -46,7 +49,7 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 | 默认关闭合作推广 | 不用插件：upstream 有开关，见下文 | 已查明 |
 | Sessions：导入其他账号的 Claude 历史 | ReClaude 插件建 junction 后，upstream 的 Sessions 自己就会读，见下文 | 已实测（沙箱） |
 | Sessions：续接 Claude Desktop 的会话、把对话交给任意 agent 继续 | 做成插件；能用哪个插件扩展点还没查 | 待分析 |
-| Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 `reclaude` 0.1.0：junction 加命令行，见下文 | 已写好，沙箱实测通过，待装到真机 |
+| Library 配置跟随、ReClaude 账号作为 `claude#rec-<id>` | 插件 `reclaude`：junction 加直接改 `library.json` 的勾选、再同步一次，见下文 | 写好了；不能装在 fork 上，换官方版时再装 |
 | 8 个 upstream 代码修复（FORK.md「Fixes inside upstream code」） | 不改原版代码，回归时一起放弃，见下文 | 已决定 |
 
 ## Cursor BYOK 与 Cursor 桥接插件
@@ -203,9 +206,10 @@ upstream 现成能用的：
   `skill agents <name> <a,b…>`、`instructions agents <a,b…>`，还有
   `magpie library sync`。
 
-**已实现**：`zwenooo/magpie-plugins` 的 `packages/reclaude`（0.1.0，
-`23f628f`，本地 tag `reclaude-v0.1.0`，都还没推送）。和原先设想的不同，它不用
-自己常驻：
+**已实现**：`zwenooo/magpie-plugins` 的 `packages/reclaude`，现在是 0.1.2
+（tag `reclaude-v0.1.2`）。**只装在官方版上**：在 fork 上它什么都不做（见下面
+「在 fork 上装过一次」）。和原先设想的不同，
+它不用自己常驻：
 
 - 插件有 `main`，magpie 的插件宿主会加载它，插件函数里起一个每 5 秒一次的检查。
   宿主是 magpie 的子进程，随 magpie 启动（读供应商时；最迟 1 分钟后
@@ -222,6 +226,18 @@ upstream 现成能用的：
   锁文件夹保证同一时刻只有一个在做；锁里记着进程号，进程不在了立刻接管。
 - 账号行完全跟着 `claude` 行：`claude` 勾了的给账号行勾上，没勾的取消。
   `claude#rec-<数字>` 的账号文件夹和 junction 都没了，就从勾选里去掉。
+- 环境里有 `CLAUDE_CONFIG_DIR` 时不工作：在 ReClaude 会话的终端里运行的 magpie
+  会把该账号当成 `claude` 行，抄的勾选就错了（0.1.1 起）。
+- **0.1.0 → 0.1.1 的改动（真机上发现的）**：0.1.0 用 `magpie library mcp|skill
+  agents …` 一项一项改。真机上每条 magpie 命令要 30 秒到 3 分钟（每条都把所有
+  agent 看一遍，包括 WSL 里的；只读的 `library mcp show` 也要 45 秒；沙箱关了
+  WSL，所以是 0.4 秒），57658 要补 44 项，新账号也一样，要等几十分钟。magpie
+  自己写 `library.json` 也只有进程内的锁，GUI 和命令行之间没有跨进程锁，所以
+  0.1.1 改为插件直接改 `library.json` 里的勾选列表（只动 `agents`，写临时文件，
+  换过去前确认文件没被改过），然后只跑一次 `magpie library sync`。欠着的同步
+  记在临时目录的 `magpie-reclaude.lock.sync-owed`，被中途结束的进程留下的同步
+  由下一次检查补上。GUI 的 HTTP 接口（有批量的 `servers/agents-some`）插件
+  调不到：网关端口上没有 `/api/library`。
 
 沙箱实测（upstream `e6f4af3f9`，假的 HOME、APPDATA，`noWSLAgents`，
 `magpie serve` 换端口）：
@@ -236,9 +252,26 @@ upstream 现成能用的：
 - 新账号先建文件夹、几秒后写 `.credentials.json`：写入后 1 秒 `.claude.json`
   里就有 hub，7 秒内 MCP 和说明的勾选都跟上。删掉账号：junction 删掉，勾选里
   去掉。在 `claude` 行取消勾选：账号行也取消。
-- fork 上也能装：fork 按同一个文件夹去重（`fork_claude_homes.go` 的
-  `addAccountClaudeDirs` 用 `sameFolder`），junction 行和 fork 自己的行是同一个
-  `claude#rec-<id>`，不会重复。所以可以先在现在的 fork 上装插件，再换官方版。
+- ~~fork 上也能装~~：读代码时以为 fork 会按同一个文件夹去重，真机上不是，见下。
+
+**在 fork 上装过一次（2026-11-25 08:53–09:17），已撤下并清理**
+
+- fork 没有把 junction 和它自己的账号行当成同一个文件夹：junction 先占了
+  `claude#rec-<id>`，fork 自己的行被改名成 `claude#rec-<id>-2`，每个账号成了
+  两行；fork 还把 `library-follow.json` 里的跟随记录也改名成了 `-2`。各账号
+  `.claude.json` 里的 hub 地址没有被写坏（都还是 `claude%23rec-<id>`）。
+- 0.1.0 每条命令的超时是 120 秒，真机上几条命令被插件自己杀掉了。
+- 09:07:23 插件条目从 `plugins.json` 里没了，不是 Claude 删的（可能是用户在
+  插件页删的）。
+- 清理：删掉 13 个 junction；`library.json` 里所有勾选去掉 `-2`（585 处），
+  `applied` 里删掉 13 个 `-2` 记录；`library-follow.json` 的跟随记录改回
+  `claude#rec-<id>`。之后 fork 自己 `library sync`："every agent already has
+  it"，没有 `-2`，13 个账号（包括 57658）的勾选都和 `claude` 行一致。清理前的
+  两个文件存在本会话 scratchpad 的 `undo-091730/`，装插件前的存在 `before/`。
+- 结果：57658 现在由 fork 自己跟随，最初"新账号没有 ops-mcp"的问题对 57658 已
+  解决。之后再出现新账号，在 fork 上仍是老办法：Library 页点一次同步。
+- 0.1.2 起插件先跑 `magpie --version`，版本号里有 `-vb.`（fork）就什么都不做，
+  只记一行日志。
 
 原先的设想（留作对照）：插件带一个小后台程序，做三件事：
 
@@ -305,31 +338,37 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
 
 ## 待做（按这个顺序）
 
-1. **插件仓库的发布脚本**：已写好（`scripts/release.mjs`），本地 tag 能用
-   magpie 的 bun 装上。剩下：推送 `main` 和 `reclaude-v0.1.0`，再从 GitHub
-   装一次确认。
-2. **ReClaude 插件**：已写好，沙箱实测通过，见「ReClaude 与配置跟随」。剩下：
-   - 装到正在用的 magpie（现在是 fork）：`magpie plugin add
-     github:zwenooo/magpie-plugins#reclaude-v0.1.0`。第一次会把 57658 等还没
-     跟上的账号补齐，magpie 会多出一些备份；
-   - 换一个新的 rec 账号，确认第一次会话就有 hub；
-   - 装好以后，57658 里手加的裸 `/hub` 条目看要不要删。
+1. **插件仓库的发布脚本**：完成。`scripts/release.mjs` 打的 tag 能从 GitHub
+   装上（2026-11-25 实测）。
+2. **ReClaude 插件**：写好了（0.1.2），沙箱实测通过。不能装在 fork 上，换官方版
+   时（第 6 步）再装。到时要确认：
+   - 换一个新的 rec 账号，第一次会话就有 hub。真机上 magpie 每条命令要几十秒
+     到几分钟（fork 上量的；官方版要再量），ReClaude 新建账号到第一次开会话
+     大约 3 分钟，要看来不来得及；
+   - 57658 的 `.claude.json` 里那条手加的裸 `/hub` 条目，magpie 当作用户的值
+     保留着（其他账号是 `/hub/claude%23rec-<id>`）。能用，要不要换由用户定。
 3. **CodeZ 供应商插件**，见「CodeZ」。
 4. **分析 Claude Desktop 续接和 handoff** 能用哪个插件扩展点。
 5. **用户试用 Cursor 桥接插件**，见「Cursor BYOK 与 Cursor 桥接插件」。
 6. **都能用之后，换成官方 magpie**：
-   - 先装好插件，再换 magpie；
+   - 先换 magpie，再装 reclaude（它在 fork 上什么都不做；换完以后 fork 的
+     `library-follow.json` 留着也没关系，官方版不读它）；
    - 设用户环境变量 `MAGPIE_PARTNERS=off`；
    - 换 magpie 要重启它，会打断正在走网关的会话，挑没在用的时候。
 
 用户说过"讨论完就开始动手"。2026-11-24 用户说"按照这个，开始吧"，第 1、2 步
-本地能做的已做完；推送和装到真机等用户点头。
+已做完；reclaude 在 fork 上装过一次出了冲突，已撤下并清理，要等换官方版时再装。
+下一步是第 3 步 CodeZ 插件。
 
 ## 实现时的备忘
 
 - **当前装的 magpie**：fork 版 `0.1.4728-vb.0.0.3`，装在 `D:\Programs\magpie`。
+  在这个会话的终端里运行它的命令时，要去掉 `CLAUDE_CONFIG_DIR`
+  （`env -u CLAUDE_CONFIG_DIR …`），否则它把当前 rec 账号当成 Claude Code。
   上一版 vb.0.0.2 在 `D:\Programs\magpie\magpie-rollback-4728-2-l2p5v1w6`，
   需要回滚时放回去即可。
+- **magpie 的日志**：`%LOCALAPPDATA%\magpie\logs\app.log`，插件的输出以
+  `plugin: [reclaude]` 开头。
 - **Cursor 桥接插件的安装位置假设**：它的 README 说 Windows 上 magpie 要在默认
   位置 `%LOCALAPPDATA%\Programs\magpie`。正在跑的 magpie 在
   `D:\Programs\magpie`；默认位置也有一份同版本的（PATH 里是它），两者都不是
@@ -404,3 +443,10 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
 - 2026-11-24：用户不想再动 fork 仓库。这份记录从 fork 的
   `docs/fork-roadmap.md` 挪到插件仓库的 `docs/roadmap.md`，fork 里没提交的
   FORK.md 改动和这份文件都撤掉，fork 仓库保持 `47c46b302` 的样子。
+- 2026-11-24：推送 reclaude 0.1.0 并从 GitHub 装到正在用的 magpie。真机上
+  magpie 每条命令 30 秒到 3 分钟，一项一项改太慢，改为直接改 `library.json`
+  再同步一次，发布 0.1.1 并换上。13 个账号都跟上了 `claude` 行。
+- 2026-11-25：reclaude 在 fork 上和 fork 自己的账号行冲突（每个账号多出一个
+  `-2` 行），撤下插件、删掉 junction、清理了 `library.json` 和
+  `library-follow.json`，fork 恢复正常，57658 也由 fork 跟随上了。插件 0.1.2
+  在 fork 上不运行。reclaude 等换官方版时再装。
