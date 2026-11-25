@@ -677,6 +677,16 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
     `magpie plugin rm` 旧地址、`add` 新地址：codez 的三把密钥、34 个模型、13 个
     挑选和上下文都还在，请求正常；13 个 junction 和跟随都还在。换之前的配置备份在
     切换备份文件夹的 `before-repo-split/`。
+22. **两个插件换地址后又被移除了**（用户："怎么插件我看到已安装里，没有codez"）：
+    reclaude 在 12:20–12:22 之间、codez 在 12:22:33 从 `plugins.json` 里没了，
+    包也被删了。magpie 只有用户移除时才删插件（`provider.RemovePlugin` →
+    `plugin.Remove`），而 `plugin.Remove` 先按地址找，找不到就**按包名**找
+    （`indexOf`）。新旧地址是同一个包名，所以在还显示着旧地址条目
+    （`…magpie-plugins#codez-v0.1.0`）的插件页上点移除，删掉的是新装的。
+    移除时 codez 的模型挑选被存进 `providers.json` 的 `pluginLeft`，三把密钥
+    留在 `plugin-auth.json`；重新 `magpie plugin add github:zwenooo/magpie-codez`
+    和 `…/magpie-reclaude` 后，挑选（13 个）、上下文、登录、跟随、桥接的模型都
+    回来了。以后在终端改了插件，先刷新（或重开）magpie 的插件页再操作。
 20. **handoff**（用户："你来做"）：官方版的命令行装不了 skill，只能在 Library 页面装。
     所以在 v0.1.4777 的源码里，往 `internal/library` 加了一个一次性的文件，调用
     页面背后的同一套函数：`InstallServer("magpie-sessions", …)` 和
