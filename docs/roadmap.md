@@ -27,6 +27,7 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
   `magpie-reclaude`），本地 `D:\code\magpie-recode`，安装 `github:zwenooo/magpie-recode`；
 - [zwenooo/magpie-codez](https://github.com/zwenooo/magpie-codez)，本地
   `D:\code\magpie-codez`，安装 `github:zwenooo/magpie-codez`；
+- 上游源码 clone 在 `D:\code\magpie`（2026-11-26，只读，`git pull` 更新），查 magpie 怎么做的直接读这里。
 - 本仓库 [zwenooo/magpie-home](https://github.com/zwenooo/magpie-home)（本地
   `D:\code\magpie-home`，原名 `magpie-plugins`）留着 skill（`skills/`）、这份
   roadmap 和总的说明，不放插件代码。
@@ -544,6 +545,20 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
     `.claude.json` 里删了这一项（指向 Codex 桌面版的 `runtimes/cua_node/…/node_repl.exe`），
     删前备份在 `~/.rec-sessions/backups/<账号>/claude.json-20261126-203505`。面板上 13 个
     账号的 MCP 都只剩 hub。
+
+### ReClaude 的额度给其他 agent 用？（2026-11-26 调研，未动手）
+
+用户问能不能把 ReClaude 账号的额度接到其他 agent。查了上游源码：
+
+- magpie 自带 Claude 订阅：`magpie accounts add claude` 登录后，其他 agent 的每个对话由 magpie 起的真
+  Claude Code 进程回答（`claude -p … --output-format stream-json`，`internal/gateway/claude_subscription.go`），
+  每个保存的账号在 `<配置>/claude-accounts/<hash>` 里跑（`CLAUDE_CONFIG_DIR`），可以按账号设代理。
+- ReClaude 账号的 `.credentials.json` 是占位令牌（含账号号，10 年后过期），真令牌在 ReClaude 守护进程
+  （`127.0.0.1:5742`，自己的 CA `~/.rec/ca.pem`）里，请求经过它时换上；13 个账号只有当前用的 57658 有凭据文件。
+- magpie 只读 `~/.claude`（或 `CLAUDE_CONFIG_DIR`）的登录和自己保存的账号，不读 `~/.claude-rec-*` 的登录。
+- 理论上能通的路：把当前 ReClaude 账号的占位凭据作为 magpie 的一个 Claude 账号，这个账号的代理设成
+  5742，magpie 的环境带上 `NODE_EXTRA_CA_CERTS=~/.rec/ca.pem`。限制：只有当前一个账号；`accounts import`
+  会让来源"登出"，要拿副本导；ReClaude 会上报流量去向，它的规则允不允许要用户自己判断。没有实测。
 
 ## 密钥同步与 Vaultwarden
 
