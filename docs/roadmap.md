@@ -204,6 +204,27 @@ fork 里 CodeZ 的行为，插件要做到：
   "密钥"不是"账号"：这是 magpie 给插件供应商写死的文字（"Add another {name} account"
   和"网关优先用第一个账号……"），插件改不了，只能改 magpie（不提 PR）或改用手动加的
   中转（用户不要）。用户对插件这套窗口仍不满意。
+- 0.4.3（2026-11-26）：Gemini 模型走 Gemini 原生接口。用户问插件是不是各种接口都
+  支持（自定义供应商用 Gemini 接口还要手填地址）。查明：
+  - 插件把模型标成 `@ai-sdk/google`，magpie 内部按 Code Assist 处理，但经插件发出的
+    就是标准 Gemini 请求：`<base>/models/<模型>:streamGenerateContent`，密钥放在
+    `x-goog-api-key`（upstream `plugins.go` 的 `pluginFetch`）。所以不用改 magpie，
+    也就没提 issue。
+  - CodeZ 的 Gemini 模型列着 `gemini` 接口；`/v1beta` 能用（`x-goog-api-key` 和
+    Bearer 都认），`/v1` 返回 404。
+  - magpie 只会把客户端请求原样转给同一种接口，Code Assist 和 Gemini 算两种。所以
+    `@ai-sdk/google` 只放进 `also` 不够（Gemini CLI 的请求仍被转成 Chat），要把它
+    设成 Gemini 模型的主接口，Chat、Responses、Messages 放进 `also`。
+  - 主接口是 Google 时，magpie 对所有接口都只把密钥放在 `x-goog-api-key`，CodeZ 的
+    Responses 接口因此回 401"未提供令牌"。插件的 loader `fetch` 给每个请求都带上
+    Bearer，同时把 Gemini 请求从 `/v1` 改到 `/v1beta`。
+  - 沙箱实测（gemini 那把密钥）：
+    - Gemini 的流式和非流式请求都走 `/v1internal` 再拆开发往 `/v1beta`，返回里带
+      `thoughtsTokenCount`；
+    - 流式的 Chat、Messages、Responses 原样转发；
+    - 非流式的 Chat、Messages 会被转成主接口，这是 magpie 对插件账号的固定处理，
+      以前转成 Chat，现在转成 Gemini，结果都是 200。
+  - 本机已更新到 0.4.3；CodeZ 供应商是用户自己关着的，没动。
 - magpie 的 bug（2026-11-26）：删掉一把密钥后，只有它列出的模型的勾选不会被清掉，Agent
   仍看得到这些模型；「重新获取模型」也清不掉，在编辑窗口里全不选、全选也没用。用户的
   绕法：全不选 → 保存 → 关掉再打开 → 重新获取。原因：删密钥后 magpie 后台重新列模型时
