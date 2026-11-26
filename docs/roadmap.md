@@ -558,7 +558,14 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
 - magpie 只读 `~/.claude`（或 `CLAUDE_CONFIG_DIR`）的登录和自己保存的账号，不读 `~/.claude-rec-*` 的登录。
 - 理论上能通的路：把当前 ReClaude 账号的占位凭据作为 magpie 的一个 Claude 账号，这个账号的代理设成
   5742，magpie 的环境带上 `NODE_EXTRA_CA_CERTS=~/.rec/ca.pem`。限制：只有当前一个账号；`accounts import`
-  会让来源"登出"，要拿副本导；ReClaude 会上报流量去向，它的规则允不允许要用户自己判断。没有实测。
+  会让来源"登出"，要拿副本导；ReClaude 会上报流量去向，它的规则允不允许要用户自己判断。
+- **沙箱实测通了**（同日，用户说"要"）：沙箱 HOME 里放 57658 凭据副本（`.claude/.credentials.json` +
+  `.claude.json` 的 `oauthAccount`，保留原过期时间，当作沙箱 Claude Code 自己的登录），magpie 环境带
+  `HTTPS_PROXY=http://127.0.0.1:5742` 和 `NODE_EXTRA_CA_CERTS=~/.rec/ca.pem`。`magpie accounts claude`
+  读到了额度（5h 18%、7d 75%），网关 `POST /v1/chat/completions` `claude/claude-haiku-5-5` 200，7.5 秒，
+  由 magpie 起的 Claude Code 回答。真实账号文件没变，沙箱和副本已删。
+  没走 `accounts import`：它把过期时间写成 1，Claude Code 首次运行会拿占位 refresh token 续期，没试过。
+  注意 `magpie web --addr` 不能和 `MAGPIE_ADDR`（网关）同一个端口。
 
 ## 密钥同步与 Vaultwarden
 
