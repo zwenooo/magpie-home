@@ -35,8 +35,10 @@ Claude 账号，记忆和 Docs 都按账号隔开，换个账号就看不到；�
 `registry.json`（upstream `internal/plugin/market.go`，每 6 小时拉一次），条目只认
 npm 包名；不带 `"community": true` 的条目只在搜索时出现，显示在发布者名下。CodeZ
 发到了 npm（`magpie-plugin-codez`，账号 `zwn2027`，2FA 只有安全密钥），登记 PR 是
-[magpie-community/plugins#1546](https://github.com/magpie-community/plugins/pull/1546)。
-发版流程见 magpie-codez 的 README（`npm stage publish` 后网页批准）。注册 npm 时网页
+[magpie-community/plugins#1546](https://github.com/magpie-community/plugins/pull/1546)，
+当天被 yetone 关闭、没合并（"日后会出相关合作方案"）。不在市场里 npm 包和 GitHub
+地址没区别，npm 停在 0.2.0 不再发（每次要网页登录、令牌约两小时过期、再用安全密钥
+批准）；暂存的 0.3.0、0.3.1 没批准。安装和更新都走 `github:zwenooo/magpie-codez`。注册 npm 时网页
 注册页拦了 DMIT 的出口 IP，命令行建账号已被 npm 关掉，用户换网络注册的。ReClaude
 不登记：`kind` 不合适，还会改 `library.json`、建 junction，审核大概率不过。
 
@@ -609,6 +611,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   ReClaude 不上架，见「插件和仓库」。
 - 2026-11-25：reclaude 改名 ReCode（0.3.0，`zwenooo/magpie-recode`，带 recode.cat 的 logo），
   已装的换成新地址（切换记录第 27 步）。
+- 2026-11-25：CodeZ 登记 PR #1546 被关闭（没合并，维护者说以后出合作方案）；npm 停在
+  0.2.0 不再发，安装走 GitHub。
 - 2026-11-25：关闭 upstream issue #7694（续接别的配置文件夹里的会话），原因是不再需要：
   ReCode 的共享会话让所有账号在同一个文件夹里 `/resume`。关闭时 Gaoshou101、joei4cm 各贴了
   修复分支（未提 PR），评论里说明了可以拿去用、需要时重开。
