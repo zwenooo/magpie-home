@@ -511,7 +511,7 @@ ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境�
      的会话。upstream 的 Library 扫描（`ProbeSkills`）能从仓库里找到这个 skill。
    - Desktop → Claude Code / Codex 转换：不做，用 handoff 代替。
 5. **Cursor 桥接插件**：2026-11-25 已装（v0.2.37）并连接，见下面「切换记录」。
-   剩下：用户在 Cursor 里实际用几天，确认能替代。
+   2026-11-26 用户确认可以替代。
 6. **换成官方 magpie**：2026-11-25 已换（用户："你帮我做吧，首先得安装最新版的
    官方的magpie吧"），见下面「切换记录」。原先的计划：
    - 先换 magpie，再装 reclaude（它在 fork 上什么都不做；换完以后 fork 的
@@ -547,7 +547,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   `MAGPIE_ADDR` 换端口，`MAGPIE_BUN` 指向已有的 magpie-bun。
 - **Sessions 命令行**：`magpie sessions` 读的是网关记下的用量，不直接扫会话
   文件，不能用来验证 Sessions 页读没读到某个文件夹。
-- **账号 57658 的 hub 条目**：它的 `.claude.json` 里有一条用户手动加的
+- **账号 57658 的 hub 条目**（2026-11-26 查过，已解决：现在是 magpie 写的
+  `/hub/claude%23rec-57658`，Library 也跟随这个账号；所有 rec 账号里都没有裸 `/hub` 了）：它的 `.claude.json` 里有一条用户手动加的
   `magpie` 条目（裸 `/hub` 地址），不是 magpie 写的。插件跟随后，magpie 可能
   因为"不覆盖用户自己写的值"而保留它。裸 `/hub` 能用，但和其他账号的
   `/hub/claude%23rec-<id>` 不一样，到时看要不要手动删掉。
@@ -650,6 +651,9 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   修复分支（未提 PR），评论里说明了可以拿去用、需要时重开。
 - 2026-11-26：用户问删掉 CodeZ 密钥后勾选不清掉是不是 magpie 的 bug（是），要求修。
   提了 issue #7816 + gist 补丁（见 CodeZ 一节）；没提 PR（只收协作者，fork 已归档）。
+- 2026-11-26：用户定：不做 CodeZ 一键中转；路由说明和"账号/密钥"用词提 upstream issue
+  （#7819）；Cursor 桥接可以替代；裸 `/hub` 要处理（查了已经没有）；清理临时文件。
+  用户问 ReCode 要不要学 Cursor 桥接做一个页面显示细节，待定。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
@@ -848,5 +852,11 @@ Cursor 版本，转发不受影响。真正的 Cursor 在 `D:\sf\cursor`。
 
 还没做：
 
-- 用户在 Cursor 里日常用几天（第 5 步的试用）。
 - 想升级 Cursor 时：先看桥接的实测范围（README 第一段），再手动装那个版本。
+- 跟进 upstream issue：[#7816](https://github.com/yetone/magpie/issues/7816)（删密钥后勾选
+  不清掉，附 gist 补丁）和 [#7819](https://github.com/yetone/magpie/issues/7819)（插件的
+  API Key 显示成"账号"、路由说明不准确）。有回复就处理；修好发版后，CodeZ 的 README 里
+  "前一个额度用完换下一个是 magpie 的通用文字"那句跟着改。
+- npm 上 `magpie-plugin-codez` 暂存的 0.3.0、0.3.1 要拒绝（`npm stage reject` 要安全密钥
+  2FA，命令行做不了；网页 Staged Packages 里点 Reject，用户用 Windows Hello 确认）。
+  `0.0.0-stage` 是暂存功能留下的占位版本，不影响安装。
