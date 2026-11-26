@@ -180,6 +180,16 @@ fork 里 CodeZ 的行为，插件要做到：
   （`app.js` 的"Add another {name} account"），插件没有字段能换成密钥布局，要改得
   动 magpie；用户明确不提 PR。路由本身已按模型选密钥（`AccountsFor`：列表里没有
   该模型的账号排后），窗口里"额度用完换下一个"只是通用说明。
+- 0.4.0（2026-11-26）：「再添加一个 CodeZ」。用户要中转那种"再添加一个 xxx"，又不要
+  用户手动加中转（"用户很蠢"）。"再添加一个 {name}"只给内置预设（`app.js` 的
+  `if (p && pr)`），插件一个导出函数只有一个供应商 id（`host.js` 的 `auths()`），在添加
+  列表里点插件只会打开已有的那个。做法：插件在 `provider` 槽放一块面板
+  （`magpie.panels`，只出现在本插件自己供应商的编辑窗口里，`pluginpages.js`），按钮用
+  `magpie.options.set` 往插件选项写 `copies: [{id, name}]`；改选项会重启插件进程
+  （`store.go` 的 `SetOptions` → `Restart`），index.js 固定导出 `CodeZ2`…`CodeZ9` 八个
+  槽，选项里有的才给出供应商 `codez2`…`codez9`。沙箱 `magpie web` + ego 实测：面板显示、
+  点按钮后新副本出现在「添加供应商 › 来自插件」，点它走自己的登录（先选地址）；
+  没登录的插件供应商不在供应商列表里。副本能改名、移除（密钥留在 plugin-auth.json）。
 
 ## 合作推广
 
