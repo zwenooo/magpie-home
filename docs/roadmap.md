@@ -573,6 +573,14 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
   `hasCompletedOnboarding`（缺了 Claude Code 会做首次联网检查，被 ReClaude 回 400；真机上有）。
   之后 `/v1/chat/completions` 200（6.7 秒），`/v1/responses` 流式正常。沙箱已删。
   正式接入还要：magpie 进程带 `NODE_EXTRA_CA_CERTS`，这个账号的代理设成 5742；ReClaude 换账号后要重新导入。
+- **方案和决定**（同日）：用户不要手动设环境变量；不提上游 issue（ReClaude 不是官方的东西，上游不会收）；
+  要在 ReCode 面板里用开关控制，**默认关**，ReCode 默认只管账号的 Library、记忆、CLAUDE.md、会话。设想的做法：
+  开关打开后 ReCode 导入当前账号副本并在换账号时重导、在 `providers.json` 写这个账号的 `accountProxies`
+  （magpie 没有命令行，`store` 是整文件替换、没有跨进程锁）、把 `NODE_EXTRA_CA_CERTS` 写进用户环境变量
+  （magpie 只把自己进程的环境传给 Claude Code，重启 magpie 后生效）。要先解决：本机 magpie 已有同邮箱
+  （googlemail）的账号，导入会覆盖它；magpie 的"用完换下一个"可能把 `~/.claude`（现为掉线的 kyroquant）
+  换到这个账号并往 `~/.claude/settings.json` 写代理，影响平时直接运行的 `claude`。
+  用户说今天时间不够，**先不做**。
 
 ## 密钥同步与 Vaultwarden
 
