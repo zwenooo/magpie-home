@@ -566,6 +566,13 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
   由 magpie 起的 Claude Code 回答。真实账号文件没变，沙箱和副本已删。
   没走 `accounts import`：它把过期时间写成 1，Claude Code 首次运行会拿占位 refresh token 续期，没试过。
   注意 `magpie web --addr` 不能和 `MAGPIE_ADDR`（网关）同一个端口。
+- **import 这条路也通了**（同日）：干净沙箱里 `magpie accounts import claude <副本>`（CLIProxyAPI 格式
+  `{type, email, access_token, refresh_token, account_uuid, org_uuid}`），magpie 提示了 Anthropic 可能封号的警告
+  后加上。Claude Code 首次运行去续期，ReClaude 守护进程按占位 refresh token 里的绑定标记认出账号、自己
+  处理，发回一套新的占位令牌（30 天），真实账号文件没变，本会话照常。沙箱里另需 `.claude.json` 的
+  `hasCompletedOnboarding`（缺了 Claude Code 会做首次联网检查，被 ReClaude 回 400；真机上有）。
+  之后 `/v1/chat/completions` 200（6.7 秒），`/v1/responses` 流式正常。沙箱已删。
+  正式接入还要：magpie 进程带 `NODE_EXTRA_CA_CERTS`，这个账号的代理设成 5742；ReClaude 换账号后要重新导入。
 
 ## 密钥同步与 Vaultwarden
 
