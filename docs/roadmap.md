@@ -172,6 +172,12 @@ fork 里 CodeZ 的行为，插件要做到：
   `renderPluginAsk`）。magpie 不给插件放"感叹号"图标，要的话得改 magpie 本身。
   说明里写了前两个经过 Cloudflare 的 100 秒限制（运维文档里画布接口因此改走
   `api.codezsy.com`）。
+- 0.3.1（同日）：账号行（用量钩子的 `plan`）改成"地址 · 各系列模型数"，例如
+  `api.codezsy.com · Claude 12 · GPT 11`，不同分组的密钥能分开。用户想要中转那种
+  编辑窗口（"添加另一个密钥"、端点、区域）：插件供应商一律用订阅账号的窗口
+  （`app.js` 的"Add another {name} account"），插件没有字段能换成密钥布局，要改得
+  动 magpie；用户明确不提 PR。路由本身已按模型选密钥（`AccountsFor`：列表里没有
+  该模型的账号排后），窗口里"额度用完换下一个"只是通用说明。
 
 ## 合作推广
 
