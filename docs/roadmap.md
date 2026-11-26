@@ -483,9 +483,12 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
 - 沙箱实测：3 个假账号，浅色、深色，展开细节，在一个账号的 CLAUDE.md 加一行后同步到其余
   账号，立即检查、立即同步。本机装上后真实数据：13 个账号 Library、skill、CLAUDE.md、会话
   都一致。
-- **还没处理**：12 个账号的 `.claude.json` 里除了 hub，还直接写着 activepieces、ops-mcp、
+- **重复的 MCP**：12 个账号的 `.claude.json` 里除了 hub，还直接写着 activepieces、ops-mcp、
   roxy-playwright、roxybrowser、zxcrouter-media（6 个账号还有 node_repl），和 hub 里的工具重复；
-  只有 57658 是干净的。多半是 fork 时期写的，官方版不认领也就不清。要不要清由用户定。
+  只有 57658 是干净的。多半是 fork 时期写的，官方版不认领也就不清。2026-11-26 用户说清掉：
+  12 个账号去掉了这 5 个，node_repl（不在 Library 里，用户自己的）留着；改前的 `.claude.json`
+  备份在 `~/.rec-sessions/backups/<账号>/claude.json-<时间>`。之后跑了一次 `magpie library sync`
+  （47 秒），没有被写回来，每个账号只剩 hub（和 node_repl）。
 
 ## 密钥同步与 Vaultwarden
 
