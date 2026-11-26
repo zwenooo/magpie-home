@@ -540,6 +540,10 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
   - 下面四块去掉了卡片框，两列排；日志默认收起。深色主题给了亮一点的强调色。
   - 用只读预览（真实数据 + 一套各种出入都有的假账号）在浅色、深色下点过筛选、展开、
     点结论里的账号号跳转。本机已更新，3587 上是新版。
+  - 同日用户问 node_repl 能不能拿掉：5 个账号（54086、54956、55795、55964、55989）的
+    `.claude.json` 里删了这一项（指向 Codex 桌面版的 `runtimes/cua_node/…/node_repl.exe`），
+    删前备份在 `~/.rec-sessions/backups/<账号>/claude.json-20261126-203505`。面板上 13 个
+    账号的 MCP 都只剩 hub。
 
 ## 密钥同步与 Vaultwarden
 
