@@ -463,6 +463,30 @@ rec 账号（`syncFollowersClaudeLocal`）。插件只用命令行的话，抄�
 这只对在 Projects 页加过项目、并且在项目里单独关过 server 的情况有影响。用户
 现在一个项目都没有，所以插件先不管这一层。
 
+### ReCode 面板和 CLAUDE.md 跟随（0.4.0 / 0.4.1，2026-11-26）
+
+用户要 ReCode 学 Cursor 桥接做一个面板，并说要照顾到记忆、CLAUDE.md、会话、skill、MCP。
+
+- **面板**：magpie 侧边栏「插件 → ReCode 面板」。逐个账号和 `~/.claude` 比：Library 勾选、
+  MCP（有没有 hub、多了少了哪些）、skill（只在 `~/.claude/skills`、不在 Library 的不会跟随）、
+  CLAUDE.md、会话和项目记忆有没有共享；还有共享文件夹、后台（上次检查和同步）、选项、日志，
+  「立即检查」「立即同步」。magpie 的插件页面不能联网，做法和 Cursor 桥接一样：页面转到插件
+  自己在 `127.0.0.1:3587`（选项 `port`）起的服务，接口要每次启动随机的令牌。
+- **CLAUDE.md 跟随**（`followClaudeMd`，默认开）：查出来 Library 的说明没给 claude 勾，
+  所以 `~/.claude/CLAUDE.md` 从来没到过 rec 账号：9 个账号是旧版本，4 个没有。现在每次检查
+  把它复制到每个账号；账号里新加的行先并回 `~/.claude/CLAUDE.md`；第一次替换前，账号里有而
+  主文件没有的内容备份到 `~/.rec-sessions/backups/`。装上 0.4.0 时 13 个账号都写成了新的，
+  旧版本没有主文件缺的行，没有产生备份。
+- 0.4.0 还修了一处：没用过 Library 的 magpie（没有 `library.json`）里插件不工作，现在也认
+  `plugins.json`。0.4.1：只把带 `SKILL.md` 的文件夹算作 skill（`~/.claude/skills/synced`
+  是同步工具的标记文件夹）。
+- 沙箱实测：3 个假账号，浅色、深色，展开细节，在一个账号的 CLAUDE.md 加一行后同步到其余
+  账号，立即检查、立即同步。本机装上后真实数据：13 个账号 Library、skill、CLAUDE.md、会话
+  都一致。
+- **还没处理**：12 个账号的 `.claude.json` 里除了 hub，还直接写着 activepieces、ops-mcp、
+  roxy-playwright、roxybrowser、zxcrouter-media（6 个账号还有 node_repl），和 hub 里的工具重复；
+  只有 57658 是干净的。多半是 fork 时期写的，官方版不认领也就不清。要不要清由用户定。
+
 ## 密钥同步与 Vaultwarden
 
 ops-mcp 的解密私钥 `OPS_MCP_AGE_KEY` 放在 Library 里 ops-mcp 的环境变量中，
@@ -653,7 +677,8 @@ reclaude 和 Cursor 桥接已装上。剩下的见「切换记录」最后的"�
   提了 issue #7816 + gist 补丁（见 CodeZ 一节）；没提 PR（只收协作者，fork 已归档）。
 - 2026-11-26：用户定：不做 CodeZ 一键中转；路由说明和"账号/密钥"用词提 upstream issue
   （#7819）；Cursor 桥接可以替代；裸 `/hub` 要处理（查了已经没有）；清理临时文件。
-  用户问 ReCode 要不要学 Cursor 桥接做一个页面显示细节，待定。
+  用户问 ReCode 要不要学 Cursor 桥接做一个页面显示细节，定了做；ReCode 0.4.0 / 0.4.1 发布并
+  装上，见「ReClaude 与配置跟随」最后一节。
 
 ## 切换记录（2026-11-25 10:50–11:00）
 
